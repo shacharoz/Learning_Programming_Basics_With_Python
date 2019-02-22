@@ -1,0 +1,12 @@
+
+*.iml
+
+\.idea/
+
+venv/Lib/site-packages/
+
+venv/Scripts/
+
+venv/__pycache__/car\.cpython-37\.pyc
+
+venv/pyvenv\.cfg
