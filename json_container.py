@@ -41,7 +41,7 @@ class JsonContainer:
 
 def main():
     print('Showing use example for class JsonContainer.')
-    json_container_example = JsonContainer('json_container.tmp', data={'Hello': 'World', 'is_cool': True})
+    json_container_example = JsonContainer('json_container.ignore', data={'Hello': 'World', 'is_cool': True})
     print('Representation: ' + repr(json_container_example))
     print('Saving... ')
     json_container_example.save()
