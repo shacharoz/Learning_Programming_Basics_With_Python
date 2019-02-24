@@ -1,12 +1,25 @@
+# PyCharm Project files
+
+.idea
 
 *.iml
 
-\.idea/
 
-venv/Lib/site-packages/
+# Python extensions and byte-compiled files
 
-venv/Scripts/
+__pycache__/
 
-venv/__pycache__/car\.cpython-37\.pyc
+*.py[cod]
 
-venv/pyvenv\.cfg
+*$py.class
+
+
+# Python Virtual Environment
+
+.venv
+
+venv/
+
+# Custom ignores
+
+*.tmp
