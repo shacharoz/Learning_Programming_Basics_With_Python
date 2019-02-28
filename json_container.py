@@ -5,10 +5,10 @@ class JsonContainer:
 
     def __init__(self, container, data=None):
         self.container = container
-        if data is None:
-            self.data = {}
-        else:
+        if data:
             self.data = data
+        else:
+            self.data = {}
 
     def load(self):
         try:
@@ -23,17 +23,11 @@ class JsonContainer:
             json.dump(self.data, writer)
             writer.close()
 
-    # def get_data(self):
-    #     return self.json_obj
-    #
-    # def set_data(self, json_obj):
-    #     self.json_obj = json_obj
-
     def __repr__(self):
         return f'JsonContainer(\'{self.container}\', data={str(self.data)})'
 
-    # def __str__(self):
-    #     return repr(self)
+    def __str__(self):
+        return repr(self)
 
     def __len__(self):
         return len(self.data)
