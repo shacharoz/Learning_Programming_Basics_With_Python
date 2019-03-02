@@ -39,7 +39,7 @@ class Window(tkinter.Tk):
             self._frame.destroy()
 
         self._frame = _frame
-        self._frame.pack()   # Displaying the new frame (page)
+        self._frame.pack()  # Displaying the new frame (page)
 
 
 class Index(tkinter.Frame):
@@ -72,7 +72,8 @@ class Index(tkinter.Frame):
         self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=275)
 
         self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
-                                    command=lambda: self.parent.show_page(Home(self.parent, {'username': self.username_entry.get()})))
+                                    command=lambda: self.parent.show_page(
+                                        Home(self.parent, {'username': self.username_entry.get()})))
         self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
 
         # TODO: Start page buttons, labels & other components
@@ -112,7 +113,6 @@ class Index(tkinter.Frame):
 class Home(tkinter.Frame):
 
     def __init__(self, parent, data):
-
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -129,7 +129,8 @@ class Home(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.label = tkinter.Label(text='Hello ' + data.get('username'), font=tkinter.font.Font(family='Calibri', size=64))
+        self.label = tkinter.Label(text='Hello ' + data.get('username'),
+                                   font=tkinter.font.Font(family='Calibri', size=64))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
@@ -137,5 +138,5 @@ class Home(tkinter.Frame):
 # Allocating a new object that will represent the main window of the app
 window = Window(Index, title='Good Looking window')
 
-if __name__ == '__main__':   # Executing if this file is ran directly
+if __name__ == '__main__':  # Executing if this file is ran directly
     window.mainloop()
