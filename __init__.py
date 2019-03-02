@@ -2,6 +2,7 @@
 import tkinter
 import tkinter.font
 import os
+import json_container
 
 
 class Window(tkinter.Tk):
@@ -76,39 +77,6 @@ class Index(tkinter.Frame):
                                         Home(self.parent, {'username': self.username_entry.get()})))
         self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
 
-        # TODO: Start page buttons, labels & other components
-
-        def update(self):
-            self.canvas = tkinter.Canvas(self.parent, width=1280,
-                                         height=720)  # The canvas on which the image will be drawn
-
-            # The image MUST be in png format
-            self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/background.png'))
-
-            self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
-
-            # This line is the most important one, Python's garbage collection will delete the image otherwise
-            self.panel.image = self.image
-            self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
-            self.canvas.pack()
-
-            self.username_entry = tkinter.Entry(self.parent, font=tkinter.font.Font(family='Calibri', size=32))
-            self.password_entry = tkinter.Entry(self.parent, show='\u2022',
-                                                font=tkinter.font.Font(family='Calibri', size=32))
-
-            self.username_entry.insert(0, 'Username')
-            self.password_entry.insert(0, 'Password')
-
-            self.username_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.username_entry.winfo_reqwidth() / 2,
-                                      y=200)
-            self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2,
-                                      y=275)
-
-            self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
-                                        command=lambda: self.parent.show_page(
-                                            Home(self.parent, {'username': self.username_entry.get()})))
-            self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
-
 
 class Home(tkinter.Frame):
 
@@ -135,8 +103,16 @@ class Home(tkinter.Frame):
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
 
+database = json_container.JsonContainer('database.json')
+
+if os.path.isfile(database.container):
+    database.load()
+else:
+    # TODO: add database initializer
+    # database.data = {}
+    database.save()
+
 # Allocating a new object that will represent the main window of the app
 window = Window(Index, title='Good Looking window')
 
-if __name__ == '__main__':  # Executing if this file is ran directly
-    window.mainloop()
+window.mainloop()
