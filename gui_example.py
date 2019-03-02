@@ -13,6 +13,7 @@ class Page(tkinter.Frame):
         Redefining __init__ function, parent will be a tkinter.Tk object which will
         be the container for all the components.
         """
+
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -32,6 +33,7 @@ class Page(tkinter.Frame):
         """
         This function will be called whenever self.button is pressed
         """
+
         print(f'Entry: {self.entry.get()}; Scale: {self.scale.get()}')
 
 

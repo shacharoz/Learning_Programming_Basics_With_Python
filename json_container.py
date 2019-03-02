@@ -1,4 +1,5 @@
 import json
+import os
 
 
 class JsonContainer:
@@ -74,9 +75,9 @@ def main():
     print('Loading... ')
     json_container_example.load()
     print('Representation: ' + repr(json_container_example))
-    print('Number of items in database: ' + str(len(json_container_example)))
+    print('Number of items in data: ', len(json_container_example))
 
 
-# This will only execute main() when this Python file is ran directly (not when is imported to other files)
+# This will execute main() only when this Python file is ran directly (not when is imported to other files)
 if __name__ == '__main__':
     main()
