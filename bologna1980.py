@@ -22,7 +22,8 @@ class Window(tkinter.Tk):
 
         self.wm_title(title)
 
-        # Initializing self._frame and displaying the start (or index) page
+        # Initializing self._frame (named with a leading underscore because it will override tkinter.Tk.frame function)
+        # and displaying the start (or index) page
         self._frame = None
         self.show_page(index(self))
 
@@ -43,12 +44,14 @@ class Window(tkinter.Tk):
         self._frame.pack()  # Displaying the new frame (page)
 
 
-class Index(tkinter.Frame):
+class Login(tkinter.Frame):
 
     def __init__(self, parent):
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
+
+        self.parent.wm_title('Login')
 
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
@@ -85,6 +88,8 @@ class Home(tkinter.Frame):
 
         self.parent = parent
 
+        self.parent.wm_title('Home')
+
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
         # The image MUST be in png format
@@ -113,6 +118,6 @@ else:
     database.save()
 
 # Allocating a new object that will represent the main window of the app
-window = Window(Index, title='Good Looking window')
+window = Window(Login, title='Good Looking window')
 
 window.mainloop()
