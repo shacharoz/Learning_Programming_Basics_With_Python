@@ -31,7 +31,7 @@ class Window(tkinter.Tk):
         """
         Destroys the current page and displays the given one.
 
-        :param page: The class of the page to be displayed - *NOTE: this must be a subclass of tkinter.Frame
+        :param page: The page to be displayed - *NOTE: this must be an instance of tkinter.Frame
         """
 
         _frame = page
@@ -47,6 +47,12 @@ class Window(tkinter.Tk):
 class Login(tkinter.Frame):
 
     def __init__(self, parent):
+        """
+        Draws every component of the screen
+
+        :param parent: The instance of tkinter.Tk this tkinter.Frame is dependant to
+        """
+
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -114,7 +120,6 @@ if os.path.isfile(database.container):
     database.load()
 else:
     # TODO: add database initializer
-    # database.data = {}
     database.save()
 
 # Allocating a new object that will represent the main window of the app
