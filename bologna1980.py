@@ -114,7 +114,7 @@ class Home(tkinter.Frame):
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
 
-database = json_container.JsonContainer('database.json')
+database = json_container.JsonContainer('bologna1980.json')
 
 if os.path.isfile(database.container):
     database.load()
