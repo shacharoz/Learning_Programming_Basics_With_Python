@@ -9,7 +9,7 @@ import datetime_helper
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, title='Window', *args, **kwargs):
+    def __init__(self, index, data_manager_2, title='Window', *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
 
@@ -22,6 +22,8 @@ class Window(tkinter.Tk):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
         self.wm_title(title)
+
+        self.data = data_manager_2
 
         # Initializing self._frame (named with a leading underscore because it will override tkinter.Tk.frame function)
         # and displaying the start (or index) page
@@ -84,7 +86,7 @@ class Login(tkinter.Frame):
 
         self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
                                     command=lambda: self.parent.show_page(
-                                        Home(self.parent, {'username': self.username_entry.get()})))
+                                        Home(self.parent, self.parent.data.login(self.username_entry.get(), self.password_entry.get()))))
         self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
 
 
@@ -109,7 +111,7 @@ class Home(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.label = tkinter.Label(text='Hello ' + data.get('username'),
+        self.label = tkinter.Label(text='Hello ' + data.get('username') + ', last login: ' + data.get('logins')[::-1][0].get('date'),
                                    font=tkinter.font.Font(family='Calibri', size=64))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
@@ -129,10 +131,16 @@ class DataManager:
     def login(self, username, password):
 
         user = self.database.data.get(username)
-        
+
         if user == None:
-            return {'username': username, 'password': password, 'logins': [{'date': datetime_helper.datenow(), 'location': 0}]}
+            user = {'username': username, 'password': password, 'logins': [{'date': datetime_helper.date_now(), 'location': 0}]}
+            self.database.data[username] = user
+            self.database.save()
+            return user
         else:
+            user.get('logins').append({'date': datetime_helper.date_now(), 'location': -1})
+            self.database.data[username] = user
+            self.database.save()
             return user
 
 
@@ -142,7 +150,7 @@ def main():
     data_manager = DataManager('bologna1980.json')
 
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, title='Good Looking window')
+    window = Window(Login, data_manager, title='Good Looking window')
 
     window.mainloop()
 

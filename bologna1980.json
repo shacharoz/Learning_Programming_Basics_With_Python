@@ -1,1 +1,30 @@
-{}
+{
+  "Username": {
+    "username": "Username",
+    "password": "Password",
+    "logins": [
+      {
+        "date": "08-03-2019 16:18:27",
+        "location": 0
+      },
+      {
+        "date": "08-03-2019 16:26:12",
+        "location": -1
+      }
+    ]
+  },
+  "Oz": {
+    "username": "Oz",
+    "password": "test",
+    "logins": [
+      {
+        "date": "08-03-2019 16:19:10",
+        "location": 0
+      },
+      {
+        "date": "08-03-2019 16:21:12",
+        "location": -1
+      }
+    ]
+  }
+}

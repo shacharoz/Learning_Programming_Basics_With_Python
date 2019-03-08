@@ -33,7 +33,7 @@ class JsonContainer:
         """Saves the current data to self.container."""
 
         with open(self.container, 'w') as writer:
-            json.dump(self.data, writer)
+            json.dump(self.data, writer, indent=2)
             writer.close()
 
     def __repr__(self):
