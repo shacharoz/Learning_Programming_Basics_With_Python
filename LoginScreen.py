@@ -4,6 +4,7 @@ from PIL import ImageTk, Image
 import json_container
 import os
 
+
 class Screen(tkinter.Frame):
 
     def __init__(self, parent):
@@ -16,7 +17,6 @@ class Screen(tkinter.Frame):
 
         print(self.database)
 
-
         """
         Redefining __init__ function, parent will be a tkinter.Tk object which will
         be the container for all the components.
@@ -25,16 +25,16 @@ class Screen(tkinter.Frame):
 
         self.parent = parent
 
-       # img = ImageTk.PhotoImage(Image.open('strage_1_ok.png'))
-        #panel = tkinter.Label(self.parent, image=img)
+    # img = ImageTk.PhotoImage(Image.open('strage_1_ok.png'))
+    # panel = tkinter.Label(self.parent, image=img)
 
-        #panel.pack(side="bottom", fill="both", expand="yes")
+    # panel.pack(side="bottom", fill="both", expand="yes")
 
-        #self.scale = tkinter.Scale(from_=0, to=50, orient=tkinter.HORIZONTAL, font=tkinter.font.Font(family='Calibri', size=12))
-        #self.scale.pack()
+    # self.scale = tkinter.Scale(from_=0, to=50, orient=tkinter.HORIZONTAL, font=tkinter.font.Font(family='Calibri',
+    # size=12))
+    # self.scale.pack()
 
-
-    #set the title of the window
+    # set the title of the window
     def set_page_title(self, new_title):
         self.parent.title(new_title)
 
@@ -47,7 +47,7 @@ class Screen(tkinter.Frame):
         self.entry = tkinter.Entry(font=tkinter.font.Font(family='Calibri', size=12))
         self.entry.pack()
 
-    def add_button(self,button_text,button_command):
+    def add_button(self, button_text, button_command):
         self.button = tkinter.Button(text=button_text, command=button_command,
                                      font=tkinter.font.Font(family='Calibri', size=12))
         self.button.pack()
@@ -56,13 +56,13 @@ class Screen(tkinter.Frame):
         """
         This function will be called whenever self.button is pressed
         """
-        #print(f'Entry: {self.entry.get()}; Scale: {self.scale.get()}')
+        # print(f'Entry: {self.entry.get()}; Scale: {self.scale.get()}')
 
     def login(self):
         username = self.entry.get()
-        #search in the database
-        #if no -> add username and SAVE to JSON
-        #if yes-> Load last date
+        # search in the database
+        # if no -> add username and SAVE to JSON
+        # if yes-> Load last date
 
         self.database.data[username] = "today"
         self.database.save()
@@ -75,7 +75,6 @@ class Screen(tkinter.Frame):
 
 
 def main():
-
     tk = tkinter.Tk()
 
     page = Screen(tk)
@@ -83,8 +82,7 @@ def main():
     page.add_label('hello')
     page.add_text_entry()
     page.add_button('Login', page.login)
-    #page.add_image('../strage_1_ok.jpg')
-
+    # page.add_image('../strage_1_ok.jpg')
 
     tk.mainloop()
 
