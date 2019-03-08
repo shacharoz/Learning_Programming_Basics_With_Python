@@ -3,6 +3,7 @@ import tkinter
 import tkinter.font
 import os
 import json_container
+import datetime_helper
 
 
 class Window(tkinter.Tk):
@@ -114,15 +115,31 @@ class Home(tkinter.Frame):
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
 
+class DataManager:
+
+    def __init__(self, container):
+
+        self.database = json_container.JsonContainer(container)
+
+        if os.path.isfile(self.database.container):
+            self.database.load()
+        else:
+            self.database.save()
+
+    def login(self, username, password):
+
+        user = self.database.data.get(username)
+        
+        if user == None:
+            return {'username': username, 'password': password, 'logins': [{'date': datetime_helper.datenow(), 'location': 0}]}
+        else:
+            return user
+
+
+
 def main():
 
-    db = json_container.JsonContainer('bologna1980.json')
-
-    if os.path.isfile(db.container):
-        db.load()
-    else:
-        # TODO: add database initializer
-        db.save()
+    data_manager = DataManager('bologna1980.json')
 
     # Allocating a new object that will represent the main window of the app
     window = Window(Login, title='Good Looking window')
