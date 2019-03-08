@@ -114,15 +114,22 @@ class Home(tkinter.Frame):
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
 
-database = json_container.JsonContainer('bologna1980.json')
+def main():
 
-if os.path.isfile(database.container):
-    database.load()
-else:
-    # TODO: add database initializer
-    database.save()
+    db = json_container.JsonContainer('bologna1980.json')
 
-# Allocating a new object that will represent the main window of the app
-window = Window(Login, title='Good Looking window')
+    if os.path.isfile(db.container):
+        db.load()
+    else:
+        # TODO: add database initializer
+        db.save()
 
-window.mainloop()
+    # Allocating a new object that will represent the main window of the app
+    window = Window(Login, title='Good Looking window')
+
+    window.mainloop()
+
+
+# Executing if the file is ran directly
+if __name__ == '__main__':
+    main()
