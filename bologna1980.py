@@ -2,7 +2,7 @@
 import tkinter
 import tkinter.font
 import os
-import json_container
+import json_file
 import datetime_helper
 
 
@@ -12,7 +12,6 @@ class Window(tkinter.Tk):
     def __init__(self, index, data_manager_2, title='Window', *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
-
         :param index: The start page
         :param args: Special Python arguments. All the arguments required by tkinter.Tk
         :param kwargs: Special Python arguments. All the non-positional arguments required by tkinter.Tk
@@ -33,7 +32,6 @@ class Window(tkinter.Tk):
     def show_page(self, page):
         """
         Destroys the current page and displays the given one.
-
         :param page: The page to be displayed - *NOTE: this must be an instance of tkinter.Frame
         """
 
@@ -52,7 +50,6 @@ class Login(tkinter.Frame):
     def __init__(self, parent):
         """
         Draws every component of the screen
-
         :param parent: The instance of tkinter.Tk this tkinter.Frame is dependant to
         """
 
@@ -121,7 +118,7 @@ class DataManager:
 
     def __init__(self, container):
 
-        self.database = json_container.JsonContainer(container)
+        self.database = json_file.JsonFile(container)
 
         if os.path.isfile(self.database.container):
             self.database.load()
@@ -132,7 +129,7 @@ class DataManager:
 
         user = self.database.data.get(username)
 
-        if user == None:
+        if user is None:
             user = {'username': username, 'password': password, 'logins': [{'date': datetime_helper.date_now(), 'location': 0}]}
             self.database.data[username] = user
             self.database.save()
@@ -142,7 +139,6 @@ class DataManager:
             self.database.data[username] = user
             self.database.save()
             return user
-
 
 
 def main():

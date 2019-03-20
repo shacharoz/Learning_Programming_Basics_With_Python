@@ -2,7 +2,7 @@ import json
 import os
 
 
-class JsonContainer:
+class JsonFile:
 
     def __init__(self, container, data=None):
         """
@@ -12,7 +12,10 @@ class JsonContainer:
         :param data: This can be a dict or an array, represents the data being stored.
         """
 
-        self.container = container
+        if os.path.isabs(container):
+            self.container = container
+        else:
+            self.container = os.path.abspath(container)
 
         if data:
             self.data = data
@@ -23,18 +26,18 @@ class JsonContainer:
         """Loads the data from self.container."""
 
         try:
-            with open(self.container, 'r') as reader:
-                self.data = json.load(reader)
-                reader.close()
+            with open(self.container, 'r') as f:
+                self.data = json.loads(f)
+                f.close()
         except json.JSONDecodeError as e:
             print('Error whilst reading ' + repr(self) + '; with exception: ' + str(e))
 
     def save(self):
         """Saves the current data to self.container."""
 
-        with open(self.container, 'w') as writer:
-            json.dump(self.data, writer, indent=2)
-            writer.close()
+        with open(self.container, 'w') as f:
+            json.dump(self.data, f)
+            f.close()
 
     def __repr__(self):
         """
@@ -43,7 +46,7 @@ class JsonContainer:
         :return: Basic representation of the class.
         """
 
-        return f'JsonContainer(\'{self.container}\', data={str(self.data)})'
+        return f'JsonContainer(\'{os.path.relpath(self.container, os.curdir)}\', data={str(self.data)})'
 
     def __str__(self):
         """
@@ -68,12 +71,12 @@ def main():
     """Tests the class and shows an example use case."""
 
     print('Showing use example for class JsonContainer.')
-    json_container_example = JsonContainer('json_container.ignore', data={'Hello': 'World', 'is_cool': True})
+    json_container_example = JsonFile('json_container.json', data={'Hello': 'World', 'is_cool': True})
     print('Representation: ' + repr(json_container_example))
-    print('Saving... ')
-    json_container_example.save()
     print('Loading... ')
     json_container_example.load()
+    print('Saving... ')
+    json_container_example.save()
     print('Representation: ' + repr(json_container_example))
     print('Number of items in data: ', len(json_container_example))
 
