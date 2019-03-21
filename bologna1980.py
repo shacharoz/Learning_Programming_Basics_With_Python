@@ -9,9 +9,10 @@ import datetime_helper
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, data_manager_2, title='Window', *args, **kwargs):
+    def __init__(self, index, user_manager, title='Window', *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
+
         :param index: The start page
         :param args: Special Python arguments. All the arguments required by tkinter.Tk
         :param kwargs: Special Python arguments. All the non-positional arguments required by tkinter.Tk
@@ -22,7 +23,7 @@ class Window(tkinter.Tk):
 
         self.wm_title(title)
 
-        self.data = data_manager_2
+        self.user_manager = user_manager
 
         # Initializing self._frame (named with a leading underscore because it will override tkinter.Tk.frame function)
         # and displaying the start (or index) page
@@ -51,6 +52,7 @@ class Login(tkinter.Frame):
         """
         Draws every component of the screen
         :param parent: The instance of tkinter.Tk this tkinter.Frame is dependant to
+        :type parent: tkinter.Tk
         """
 
         tkinter.Frame.__init__(self, parent)
@@ -82,14 +84,24 @@ class Login(tkinter.Frame):
         self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=275)
 
         self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
-                                    command=lambda: self.parent.show_page(
-                                        Home(self.parent, self.parent.data.login(self.username_entry.get(), self.password_entry.get()))))
+                                    command=self.login)
         self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
+        self.warning = tkinter.Label()
+
+    def login(self):
+        user = self.parent.user_manager.log(self.username_entry.get(), self.password_entry.get())
+
+        if user.auth.get('success') is True:
+            self.parent.show_page(Home(self.parent, user))
+        else:
+            self.warning.config(text='Login failed: ' + user.auth.get('cause'), fg='red',
+                                font=tkinter.font.Font(family='Calibri', size=24))
+            self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=300)
 
 
 class Home(tkinter.Frame):
 
-    def __init__(self, parent, data):
+    def __init__(self, parent, user):
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -108,45 +120,108 @@ class Home(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.label = tkinter.Label(text='Hello ' + data.get('username') + ', last login: ' + data.get('logins')[::-1][0].get('date'),
-                                   font=tkinter.font.Font(family='Calibri', size=64))
+        self.label = tkinter.Label(text='placeholder', font=tkinter.font.Font(family='Calibri', size=64))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
 
-class DataManager:
+class User(object):
 
-    def __init__(self, container):
+    def __init__(self, username, password=None, data=None, auth=None):
+        """
+        This class represents a user.
 
-        self.database = json_file.JsonFile(container)
+        :param username: The name of the User.
+        :type username: str
 
-        if os.path.isfile(self.database.container):
-            self.database.load()
+        :param password: The password of the User, optional if the data is given.
+        :type password: str
+
+        :param data: The data of the User, optional if the password is given.
+        :type data: dict
+
+        :param auth: Authentication dict. It should have this format
+                     {'success': bool, 'cause': str or NoneType if successful}
+        :type auth: dict
+        """
+
+        self.name = username
+
+        if data is not None:
+            self.data = data
         else:
-            self.database.save()
+            self.data = {'password': password, 'logins': []}
 
-    def login(self, username, password):
-
-        user = self.database.data.get(username)
-
-        if user is None:
-            user = {'username': username, 'password': password, 'logins': [{'date': datetime_helper.date_now(), 'location': 0}]}
-            self.database.data[username] = user
-            self.database.save()
-            return user
+        if auth is not None:
+            self.auth = auth
         else:
-            user.get('logins').append({'date': datetime_helper.date_now(), 'location': -1})
-            self.database.data[username] = user
-            self.database.save()
-            return user
+            self.auth = None
+
+
+class UserManager:
+
+    def __init__(self, db):
+
+        self.db = db
+
+        if os.path.isfile(self.db.container):
+            self.db.load()
+        else:
+            self.db.save()
+
+    def set(self, user):
+        """
+        Updates (or adds if no valid user is found) a user to the database.
+
+        :param user: The user to update (or add) to the database.
+        :type user: User
+        """
+        if isinstance(user, User):
+            self.db.data[user.name] = user.data
+            self.db.save()
+        else:
+            raise TypeError(f"'{user}' is not a valid User.")
+
+    def log(self, username, password):
+
+        data = self.db.data.get(username)  # Retrieving the data, if no user is found this will be set to None
+
+        if data is not None:
+            user = User(username, data=data)
+
+            # Authenticates the user
+            if user.data.get('password') == password:
+                user.auth = {'success': True, 'cause': None}  # Setting the authentication to successful
+            else:
+                user.auth = {'success': False, 'cause': 'Wrong password!'}  # Setting the authentication to unsuccessful
+
+            return user  # Returns the authenticated user
+        else:
+            self.set(User(username, password))   # Saving the new User to the database
+            return self.log(username, password)  # Call to the same function for authentication
+
+    # def login(self, username, password):
+    #
+    #     user = self.db.data.get(username)
+    #
+    #     if user is None:
+    #         user = {'password': password, 'logins': [{'date': datetime_helper.date_now(), 'progress': 0}]}
+    #         self.db.data[username] = user
+    #         self.db.save()
+    #     else:
+    #         user.get('logins').append({'date': datetime_helper.date_now(), 'progress': -1})
+    #         self.db.data[username] = user
+    #         self.db.save()
+    #     return
 
 
 def main():
+    db = json_file.JsonFile('bologna1980.json')
 
-    data_manager = DataManager('bologna1980.json')
+    user_manager = UserManager(db)
 
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, data_manager, title='Good Looking window')
+    window = Window(Login, user_manager, title='Good Looking window')
 
     window.mainloop()
 
