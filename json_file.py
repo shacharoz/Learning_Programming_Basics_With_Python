@@ -27,7 +27,7 @@ class JsonFile:
 
         try:
             with open(self.container, 'r') as f:
-                self.data = json.loads(f)
+                self.data = json.load(f)
                 f.close()
         except json.JSONDecodeError as e:
             print('Error whilst reading ' + repr(self) + '; with exception: ' + str(e))
@@ -36,7 +36,7 @@ class JsonFile:
         """Saves the current data to self.container."""
 
         with open(self.container, 'w') as f:
-            json.dump(self.data, f)
+            json.dump(self.data, f, indent=2)
             f.close()
 
     def __repr__(self):

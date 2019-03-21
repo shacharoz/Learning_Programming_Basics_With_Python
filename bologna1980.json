@@ -1,6 +1,5 @@
 {
   "Username": {
-    "username": "Username",
     "password": "Password",
     "logins": [
       {
@@ -14,7 +13,6 @@
     ]
   },
   "Oz": {
-    "username": "Oz",
     "password": "test",
     "logins": [
       {
@@ -26,5 +24,13 @@
         "location": -1
       }
     ]
+  },
+  "Username1": {
+    "password": "Passwordf",
+    "logins": []
+  },
+  "Username2": {
+    "password": "Password",
+    "logins": []
   }
 }
