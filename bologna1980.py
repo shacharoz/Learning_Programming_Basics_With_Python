@@ -85,18 +85,18 @@ class Login(tkinter.Frame):
 
         self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
                                     command=self.login)
-        self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=350)
+        self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=400)
         self.warning = tkinter.Label()
 
     def login(self):
-        user = self.parent.user_manager.log(self.username_entry.get(), self.password_entry.get())
+        user = self.parent.user_manager.login(self.username_entry.get(), self.password_entry.get())
 
         if user.auth.get('success') is True:
             self.parent.show_page(Home(self.parent, user))
         else:
             self.warning.config(text='Login failed: ' + user.auth.get('cause'), fg='red',
                                 font=tkinter.font.Font(family='Calibri', size=24))
-            self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=300)
+            self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=345)
 
 
 class Home(tkinter.Frame):
@@ -120,7 +120,12 @@ class Home(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.label = tkinter.Label(text='placeholder', font=tkinter.font.Font(family='Calibri', size=64))
+        logins = user.data.get('logins')
+        if len(logins) > 1:
+            self.label = tkinter.Label(text=f"Last login: {logins[-1].get('date')}.",
+                                       font=tkinter.font.Font(family='Calibri', size=64))
+        else:
+            self.label = tkinter.Label(text=f'You are a new user.', font=tkinter.font.Font(family='Calibri', size=64))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
 
@@ -146,16 +151,12 @@ class User(object):
         """
 
         self.name = username
+        self.auth = auth
 
         if data is not None:
             self.data = data
-        else:
-            self.data = {'password': password, 'logins': []}
-
-        if auth is not None:
-            self.auth = auth
-        else:
-            self.auth = None
+        elif password is not None:
+            self.data = {'password': password, 'logins': []}  # Initializing the data
 
 
 class UserManager:
@@ -182,23 +183,32 @@ class UserManager:
         else:
             raise TypeError(f"'{user}' is not a valid User.")
 
-    def log(self, username, password):
+    def login(self, username, password):
+        """
+        Loads a user from the database and authenticates him.
+
+        :param username: The user's name
+        :type username: str
+        :param password: The user's password
+        :type password: str
+        :return: The User loaded from the database
+        """
 
         data = self.db.data.get(username)  # Retrieving the data, if no user is found this will be set to None
 
         if data is not None:
             user = User(username, data=data)
-
-            # Authenticates the user
+            user.data.get('logins').append({'date': datetime_helper.date_now(), 'progress': 0})
+            # Authenticating the user
             if user.data.get('password') == password:
                 user.auth = {'success': True, 'cause': None}  # Setting the authentication to successful
             else:
                 user.auth = {'success': False, 'cause': 'Wrong password!'}  # Setting the authentication to unsuccessful
-
+            self.set(user)
             return user  # Returns the authenticated user
         else:
-            self.set(User(username, password))   # Saving the new User to the database
-            return self.log(username, password)  # Call to the same function for authentication
+            self.set(User(username, password))  # Saving the new User to the database
+            return self.login(username, password)  # Call to the same function for authentication
 
     # def login(self, username, password):
     #

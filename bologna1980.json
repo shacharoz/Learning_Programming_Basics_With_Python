@@ -3,34 +3,13 @@
     "password": "Password",
     "logins": [
       {
-        "date": "08-03-2019 16:18:27",
-        "location": 0
+        "date": "21-03-2019 18:26:36",
+        "progress": 0
       },
       {
-        "date": "08-03-2019 16:26:12",
-        "location": -1
+        "date": "21-03-2019 18:26:44",
+        "progress": 0
       }
     ]
-  },
-  "Oz": {
-    "password": "test",
-    "logins": [
-      {
-        "date": "08-03-2019 16:19:10",
-        "location": 0
-      },
-      {
-        "date": "08-03-2019 16:21:12",
-        "location": -1
-      }
-    ]
-  },
-  "Username1": {
-    "password": "Passwordf",
-    "logins": []
-  },
-  "Username2": {
-    "password": "Password",
-    "logins": []
   }
 }
