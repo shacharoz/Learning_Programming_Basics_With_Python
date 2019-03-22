@@ -123,11 +123,61 @@ class Home(tkinter.Frame):
         logins = user.data.get('logins')
         if len(logins) > 1:
             self.label = tkinter.Label(text=f"Last login: {logins[-1].get('date')}.",
-                                       font=tkinter.font.Font(family='Calibri', size=64))
+                                       font=tkinter.font.Font(family='Calibri', size=20))
         else:
-            self.label = tkinter.Label(text=f'You are a new user.', font=tkinter.font.Font(family='Calibri', size=64))
+            self.label = tkinter.Label(text=f'You are a new user.', font=tkinter.font.Font(family='Calibri', size=20))
 
-        self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=350)
+        self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
+
+        self.startBT = tkinter.Button(text='Start', command=lambda: self.parent.show_page(Slide(self.parent)),
+                                      font=tkinter.font.Font(family='Calibri', size=64))
+        self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.startBT.winfo_reqwidth() / 2, y=375)
+
+padding = 50
+
+
+class Slide(tkinter.Frame):
+
+    def __init__(self, parent):
+        tkinter.Frame.__init__(self, parent)
+
+        self.parent = parent
+
+        self.parent.wm_title('Story')
+
+        self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
+
+        # The image MUST be in png format
+        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/background.png'))
+
+        self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
+
+        # This line is the most important one, Python's garbage collection will delete the image otherwise
+        self.panel.image = self.image
+        self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
+        self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.timeLB = tkinter.Label(text="7:50",
+                                  font=tkinter.font.Font(family='Calibri', size=64))
+        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
+                          y=padding)
+
+        self.nextBT = tkinter.Button(text="Next",
+                                   font=tkinter.font.Font(family='Calibri', size=32))
+
+        self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - padding,
+                          y=self.canvas.winfo_reqheight() - padding - self.nextBT.winfo_reqheight())
+
+        self.backBT = tkinter.Button(text="Back",
+                                     font=tkinter.font.Font(family='Calibri', size=32))
+
+        self.backBT.place(x=padding, y=self.canvas.winfo_reqheight() - padding - self.backBT.winfo_reqheight())
+
+        self.titleLB = tkinter.Label(text="Getting to station",
+                                    font=tkinter.font.Font(family='Calibri', size=64))
+        self.titleLB.place(x=padding,
+                           y=self.canvas.winfo_reqheight() - 3 * padding - self.backBT.winfo_reqheight() - self.titleLB.winfo_reqheight())
+
 
 
 class User(object):
