@@ -129,16 +129,18 @@ class Home(tkinter.Frame):
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
-        self.startBT = tkinter.Button(text='Start', command=lambda: self.parent.show_page(Slide(self.parent)),
+        self.startBT = tkinter.Button(text='Start', command=lambda: self.parent.show_page(Slide(self.parent, user)),
                                       font=tkinter.font.Font(family='Calibri', size=64))
         self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.startBT.winfo_reqwidth() / 2, y=375)
 
-padding = 50
+
+padding = 25
+padding_small = 10
 
 
 class Slide(tkinter.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, user):
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -148,7 +150,7 @@ class Slide(tkinter.Frame):
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
         # The image MUST be in png format
-        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/background.png'))
+        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/Corriere-Web-Sezioni.png'))
 
         self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
 
@@ -157,13 +159,23 @@ class Slide(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.timeLB = tkinter.Label(text="7:50",
-                                  font=tkinter.font.Font(family='Calibri', size=64))
-        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
-                          y=padding)
+        self.homeBT = tkinter.Button(text='Bologna 1980', command=lambda: self.parent.show_page(Home(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=16))
 
-        self.nextBT = tkinter.Button(text="Next",
-                                   font=tkinter.font.Font(family='Calibri', size=32))
+        self.homeBT.place(x=padding_small, y=padding_small)
+
+        self.userBT = tkinter.Button(text=f'{user.name}', command=lambda: self.parent.show_page(Home(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=16))
+
+        self.userBT.place(x=self.canvas.winfo_reqwidth() - padding_small - self.userBT.winfo_reqwidth(), y=padding_small)
+
+        self.timeLB = tkinter.Label(text="7:50",
+                                    font=tkinter.font.Font(family='Calibri', size=48))
+        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
+                          y=3 * padding_small + self.userBT.winfo_reqheight())
+
+        self.nextBT = tkinter.Button(text="Next", command=lambda: self.parent.show_page(Slide2(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=32))
 
         self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - padding,
                           y=self.canvas.winfo_reqheight() - padding - self.nextBT.winfo_reqheight())
@@ -174,9 +186,62 @@ class Slide(tkinter.Frame):
         self.backBT.place(x=padding, y=self.canvas.winfo_reqheight() - padding - self.backBT.winfo_reqheight())
 
         self.titleLB = tkinter.Label(text="Getting to station",
-                                    font=tkinter.font.Font(family='Calibri', size=64))
+                                     font=tkinter.font.Font(family='Calibri', size=64))
         self.titleLB.place(x=padding,
-                           y=self.canvas.winfo_reqheight() - 3 * padding - self.backBT.winfo_reqheight() - self.titleLB.winfo_reqheight())
+                           y=self.canvas.winfo_reqheight() - 3 * padding - self.titleLB.winfo_reqheight() - self.titleLB.winfo_reqheight())
+
+
+class Slide2(tkinter.Frame):
+
+    def __init__(self, parent, user):
+        tkinter.Frame.__init__(self, parent)
+
+        self.parent = parent
+
+        self.parent.wm_title('Story')
+
+        self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
+
+        # The image MUST be in png format
+        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/tabaccheria.png'))
+
+        self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
+
+        # This line is the most important one, Python's garbage collection will delete the image otherwise
+        self.panel.image = self.image
+        self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
+        self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.homeBT = tkinter.Button(text='Bologna 1980', command=lambda: self.parent.show_page(Home(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=16))
+
+        self.homeBT.place(x=padding_small, y=padding_small)
+
+        self.userBT = tkinter.Button(text=f'{user.name}', command=lambda: self.parent.show_page(Home(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=16))
+        self.userBT.place(x=self.canvas.winfo_reqwidth() - padding_small - self.userBT.winfo_reqwidth(),
+                          y=padding_small)
+
+        self.timeLB = tkinter.Label(text="8:20",
+                                    font=tkinter.font.Font(family='Calibri', size=48))
+        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
+                          y=3 * padding_small + self.userBT.winfo_reqheight())
+
+        self.nextBT = tkinter.Button(text="Next",
+                                     font=tkinter.font.Font(family='Calibri', size=32))
+        self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - padding,
+                          y=self.canvas.winfo_reqheight() - padding - self.nextBT.winfo_reqheight())
+
+        self.backBT = tkinter.Button(text="Back",
+                                     command=lambda: self.parent.show_page(Slide(self.parent, user)),
+                                     font=tkinter.font.Font(family='Calibri', size=32))
+        self.backBT.place(x=padding,
+                          y=self.canvas.winfo_reqheight() - padding - self.backBT.winfo_reqheight())
+
+        self.titleLB = tkinter.Label(text="going to buy cigarette",
+                                     font=tkinter.font.Font(family='Calibri', size=64))
+        self.titleLB.place(x=padding,
+                           y=self.canvas.winfo_reqheight() - 3 * padding - self.titleLB.winfo_reqheight() - self.titleLB.winfo_reqheight())
 
 
 
