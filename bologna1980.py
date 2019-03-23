@@ -125,7 +125,7 @@ class Home(tkinter.Frame):
             self.label = tkinter.Label(text=f"Last login: {logins[-1].get('date')}.",
                                        font=tkinter.font.Font(family='Calibri', size=20))
         else:
-            self.label = tkinter.Label(text=f'You are a new user.', font=tkinter.font.Font(family='Calibri', size=20))
+            self.label = tkinter.Label(text=f'{user.name}, you are a new user.', font=tkinter.font.Font(family='Calibri', size=20))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
@@ -137,6 +137,7 @@ class Home(tkinter.Frame):
 padding = 25
 padding_small = 10
 
+current_slide = 0
 
 class Slide(tkinter.Frame):
 

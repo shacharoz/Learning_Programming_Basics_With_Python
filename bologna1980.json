@@ -135,5 +135,31 @@
         "progress": 0
       }
     ]
+  },
+  "Susanna": {
+    "password": "1234",
+    "logins": [
+      {
+        "date": "22-03-2019 17:15:33",
+        "progress": 0
+      },
+      {
+        "date": "22-03-2019 17:17:21",
+        "progress": 0
+      },
+      {
+        "date": "22-03-2019 17:17:33",
+        "progress": 0
+      }
+    ]
+  },
+  "susanna": {
+    "password": "1234",
+    "logins": [
+      {
+        "date": "22-03-2019 17:32:59",
+        "progress": 0
+      }
+    ]
   }
 }
