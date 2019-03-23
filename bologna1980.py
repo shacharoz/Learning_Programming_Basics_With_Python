@@ -134,9 +134,12 @@ class Home(tkinter.Frame):
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
-        self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).start(),
-                                      font=tkinter.font.Font(family='Calibri', size=64))
-        self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.startBT.winfo_reqwidth() / 2, y=375)
+        self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).restart(),
+                                      font=tkinter.font.Font(family='Calibri', size=32))
+        self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 + self.startBT.winfo_reqwidth(), y=375)
+        self.continueBT = tkinter.Button(text='Continue', command=lambda: SlideShow(self.parent, user).start(),
+                                         font=tkinter.font.Font(family='Calibri', size=32))
+        self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
 
 
 class SlideFrame(tkinter.Frame):
@@ -233,8 +236,14 @@ class SlideShow:
         self.index = 0
         self.highest = self.user.data.get('logins')[-1].get('progress')
 
-    def start(self):
+    def restart(self):
         self.index = 0
+        slide = Slide(self.slides[self.index])
+        frame = SlideFrame(self.root, self.user, self, slide)
+        self.root.show_page(frame)
+
+    def start(self):
+        self.index = self.user.data.get('logins')[-1].get('progress')
         slide = Slide(self.slides[self.index])
         frame = SlideFrame(self.root, self.user, self, slide)
         self.root.show_page(frame)
