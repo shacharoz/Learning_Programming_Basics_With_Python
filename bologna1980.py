@@ -81,6 +81,11 @@ class Login(tkinter.Frame):
         self.username_entry.insert(0, 'Username')
         self.password_entry.insert(0, 'Password')
 
+        def delete(event):
+            event.widget.delete(0, 'end')
+        self.username_entry.bind('<Button-1>', delete)
+        self.password_entry.bind('<Button-1>', delete)
+
         self.username_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.username_entry.winfo_reqwidth() / 2, y=200)
         self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=275)
 
@@ -88,6 +93,9 @@ class Login(tkinter.Frame):
                                       command=self.login)
         self.loginBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.loginBT.winfo_reqwidth() / 2, y=400)
         self.warning = tkinter.Label()
+
+        self.username_entry.bind('<Return>', self.login)
+        self.password_entry.bind('<Return>', self.login)
 
         self.bind('<Return>', self.login)
         self.focus_set()
@@ -234,7 +242,11 @@ class SlideShow:
         self.user = user
         self.slides = slides
         self.index = 0
-        self.highest = self.user.data.get('logins')[-1].get('progress')
+        logins = user.data.get('logins')
+        if len(logins) > 1:
+            self.highest = self.user.data.get('logins')[::-1][1].get('progress')
+        else:
+            self.highest = self.user.data.get('logins')[0].get('progress')
 
     def restart(self):
         self.index = 0
@@ -243,10 +255,12 @@ class SlideShow:
         self.root.show_page(frame)
 
     def start(self):
-        self.index = self.user.data.get('logins')[-1].get('progress')
-        slide = Slide(self.slides[self.index])
+        self.user.data.get('logins')[-1]['progress'] = self.highest
+        self.index = self.highest
+        slide = Slide(self.slides[self.highest])
         frame = SlideFrame(self.root, self.user, self, slide)
         self.root.show_page(frame)
+        self.root.user_manager.set(self.user)
 
     def next(self, event=None):
         if self.index < len(self.slides) - 1:
@@ -255,6 +269,7 @@ class SlideShow:
             frame = SlideFrame(self.root, self.user, self, slide)
             self.root.show_page(frame)
 
+            print(self.index, self.highest)
             # Saving the new progress only if it's more than the last one
             if self.index > self.highest:
                 self.highest = self.index
