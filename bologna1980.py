@@ -60,7 +60,7 @@ class Login(tkinter.Frame):
 
         self.parent = parent
 
-        self.parent.wm_title('Login')
+        self.parent.wm_title('Bologna 1980 - Login')
 
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
@@ -110,7 +110,7 @@ class Home(tkinter.Frame):
 
         self.parent = parent
 
-        self.parent.wm_title('Home')
+        self.parent.wm_title(f'Bologna 1980 - {user.name} Home')
 
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
@@ -126,7 +126,7 @@ class Home(tkinter.Frame):
 
         logins = user.data.get('logins')
         if len(logins) > 1:
-            self.label = tkinter.Label(text=f"Last login: {logins[-1].get('date')}.",
+            self.label = tkinter.Label(text=f"Last login: {logins[::-1][1].get('date')}.",
                                        font=tkinter.font.Font(family='Calibri', size=20))
         else:
             self.label = tkinter.Label(text=f'{user.name}, you are a new user.',
@@ -289,9 +289,10 @@ class User(object):
                      {'success': bool, 'cause': str or NoneType if successful}
         :type auth: dict
         """
-
         self.name = username
         self.auth = auth
+
+        self.id = self.name.replace(' ', '_').lower()
 
         if data is not None:
             self.data = data
@@ -318,7 +319,7 @@ class UserManager:
         :type user: User
         """
         if isinstance(user, User):
-            self.db.data[user.name] = user.data
+            self.db.data[user.id] = user.data
             self.db.save()
         else:
             raise TypeError(f"'{user}' is not a valid User.")
@@ -333,8 +334,7 @@ class UserManager:
         :type password: str
         :return: The User loaded from the database
         """
-
-        data = self.db.data.get(username)  # Retrieving the data, if no user is found this will be set to None
+        data = self.db.data.get(User(username).id)  # Retrieving the data, if no user is found this will be set to None
 
         if data is not None:
             user = User(username, data=data)
@@ -377,7 +377,7 @@ def main():
     # PADDING_SMALL = cfg.items().get('Padding')
 
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager, title='Good Looking window')
+    window = Window(Login, user_manager, title='Bologna 1980')
 
     window.mainloop()
 

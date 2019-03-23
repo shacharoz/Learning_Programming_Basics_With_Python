@@ -1,10 +1,30 @@
 {
-  "Username": {
+  "username": {
     "password": "Password",
     "logins": [
       {
         "date": "23-03-2019 18:20:47",
         "progress": 3
+      },
+      {
+        "date": "23-03-2019 18:24:45",
+        "progress": 0
+      },
+      {
+        "date": "23-03-2019 18:25:36",
+        "progress": 0
+      },
+      {
+        "date": "23-03-2019 18:29:29",
+        "progress": 0
+      },
+      {
+        "date": "23-03-2019 18:35:22",
+        "progress": 8
+      },
+      {
+        "date": "23-03-2019 18:36:20",
+        "progress": 9
       }
     ]
   }
