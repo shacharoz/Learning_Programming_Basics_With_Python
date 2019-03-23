@@ -4,6 +4,7 @@ import tkinter.font
 import os
 import json_file
 import datetime_helper
+import threading
 
 
 class Window(tkinter.Tk):
@@ -83,12 +84,15 @@ class Login(tkinter.Frame):
         self.username_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.username_entry.winfo_reqwidth() / 2, y=200)
         self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=275)
 
-        self.login = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
-                                    command=self.login)
-        self.login.place(x=self.canvas.winfo_reqwidth() / 2 - self.login.winfo_reqwidth() / 2, y=400)
+        self.loginBT = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
+                                      command=self.login)
+        self.loginBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.loginBT.winfo_reqwidth() / 2, y=400)
         self.warning = tkinter.Label()
 
-    def login(self):
+        self.bind('<Return>', self.login)
+        self.focus_set()
+
+    def login(self, event=None):
         user = self.parent.user_manager.login(self.username_entry.get(), self.password_entry.get())
 
         if user.auth.get('success') is True:
@@ -125,33 +129,31 @@ class Home(tkinter.Frame):
             self.label = tkinter.Label(text=f"Last login: {logins[-1].get('date')}.",
                                        font=tkinter.font.Font(family='Calibri', size=20))
         else:
-            self.label = tkinter.Label(text=f'{user.name}, you are a new user.', font=tkinter.font.Font(family='Calibri', size=20))
+            self.label = tkinter.Label(text=f'{user.name}, you are a new user.',
+                                       font=tkinter.font.Font(family='Calibri', size=20))
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
-        self.startBT = tkinter.Button(text='Start', command=lambda: self.parent.show_page(Slide(self.parent, user)),
+        self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).start(),
                                       font=tkinter.font.Font(family='Calibri', size=64))
         self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.startBT.winfo_reqwidth() / 2, y=375)
 
 
-padding = 25
-padding_small = 10
+class SlideFrame(tkinter.Frame):
 
-current_slide = 0
-
-class Slide(tkinter.Frame):
-
-    def __init__(self, parent, user):
+    def __init__(self, parent, user, slide_show, slide):
         tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
 
-        self.parent.wm_title('Story')
+        self.slide_show = slide_show
+
+        self.parent.wm_title(f'Bologna 1980 - {slide.title}')
 
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
         # The image MUST be in png format
-        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/Corriere-Web-Sezioni.png'))
+        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img', slide.image))
 
         self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
 
@@ -160,90 +162,103 @@ class Slide(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.homeBT = tkinter.Button(text='Bologna 1980', command=lambda: self.parent.show_page(Home(self.parent, user)),
+        self.homeBT = tkinter.Button(text='Bologna 1980',
+                                     command=lambda: self.parent.show_page(Login(self.parent)),
                                      font=tkinter.font.Font(family='Calibri', size=16))
 
-        self.homeBT.place(x=padding_small, y=padding_small)
+        self.homeBT.place(x=PADDING_SMALL, y=PADDING_SMALL)
 
-        self.userBT = tkinter.Button(text=f'{user.name}', command=lambda: self.parent.show_page(Home(self.parent, user)),
+        self.userBT = tkinter.Button(text=f'{user.name}',
+                                     command=lambda: self.parent.show_page(Home(self.parent, user)),
                                      font=tkinter.font.Font(family='Calibri', size=16))
 
-        self.userBT.place(x=self.canvas.winfo_reqwidth() - padding_small - self.userBT.winfo_reqwidth(), y=padding_small)
+        self.userBT.place(x=self.canvas.winfo_reqwidth() - PADDING_SMALL - self.userBT.winfo_reqwidth(),
+                          y=PADDING_SMALL)
 
-        self.timeLB = tkinter.Label(text="7:50",
+        self.timeLB = tkinter.Label(text=slide.time,
                                     font=tkinter.font.Font(family='Calibri', size=48))
-        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
-                          y=3 * padding_small + self.userBT.winfo_reqheight())
+        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - PADDING,
+                          y=3 * PADDING_SMALL + self.userBT.winfo_reqheight())
 
-        self.nextBT = tkinter.Button(text="Next", command=lambda: self.parent.show_page(Slide2(self.parent, user)),
+        self.nextBT = tkinter.Button(text="Next", command=self.slide_show.next,
                                      font=tkinter.font.Font(family='Calibri', size=32))
 
-        self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - padding,
-                          y=self.canvas.winfo_reqheight() - padding - self.nextBT.winfo_reqheight())
+        self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - PADDING,
+                          y=self.canvas.winfo_reqheight() - PADDING - self.nextBT.winfo_reqheight())
 
-        self.backBT = tkinter.Button(text="Back",
+        self.backBT = tkinter.Button(text="Back", command=self.slide_show.back,
                                      font=tkinter.font.Font(family='Calibri', size=32))
 
-        self.backBT.place(x=padding, y=self.canvas.winfo_reqheight() - padding - self.backBT.winfo_reqheight())
+        self.backBT.place(x=PADDING, y=self.canvas.winfo_reqheight() - PADDING - self.backBT.winfo_reqheight())
 
-        self.titleLB = tkinter.Label(text="Getting to station",
+        self.titleLB = tkinter.Label(text=slide.title,
                                      font=tkinter.font.Font(family='Calibri', size=64))
-        self.titleLB.place(x=padding,
-                           y=self.canvas.winfo_reqheight() - 3 * padding - self.titleLB.winfo_reqheight() - self.titleLB.winfo_reqheight())
+        self.titleLB.place(x=PADDING,
+                           y=self.canvas.winfo_reqheight() - 3 * PADDING - self.titleLB.winfo_reqheight() - self.titleLB.winfo_reqheight())
+
+        self.bind('<Right>', self.slide_show.next)
+        self.bind('<Left>', self.slide_show.back)
+        self.focus_set()
 
 
-class Slide2(tkinter.Frame):
+class Slide(object):
 
-    def __init__(self, parent, user):
-        tkinter.Frame.__init__(self, parent)
+    def __init__(self, slide):
+        """
 
-        self.parent = parent
+        :param slide: The data of the Slide loaded from JSON.
+        :type slide: dict
+        """
 
-        self.parent.wm_title('Story')
+        self.title = slide.get('title')
+        self.time = slide.get('time')
 
-        self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
+        if slide.get('image') is None:
+            self.image = 'missing.png'
+        else:
+            self.image = slide.get('image')
 
-        # The image MUST be in png format
-        self.image = tkinter.PhotoImage(file=os.path.join('assets', 'img/tabaccheria.png'))
 
-        self.panel = tkinter.Label(self.parent, image=self.image)  # This is the label that will contain the image
+class SlideShow:
 
-        # This line is the most important one, Python's garbage collection will delete the image otherwise
-        self.panel.image = self.image
-        self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
-        self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
+    def __init__(self, root, user):
 
-        self.homeBT = tkinter.Button(text='Bologna 1980', command=lambda: self.parent.show_page(Home(self.parent, user)),
-                                     font=tkinter.font.Font(family='Calibri', size=16))
+        _slides = json_file.JsonFile(os.path.join('assets', 'dat/slides.json'))
+        _slides.load()
+        slides = _slides.data
 
-        self.homeBT.place(x=padding_small, y=padding_small)
+        self.root = root
+        self.user = user
+        self.slides = slides
+        self.index = 0
+        self.highest = self.user.data.get('logins')[-1].get('progress')
 
-        self.userBT = tkinter.Button(text=f'{user.name}', command=lambda: self.parent.show_page(Home(self.parent, user)),
-                                     font=tkinter.font.Font(family='Calibri', size=16))
-        self.userBT.place(x=self.canvas.winfo_reqwidth() - padding_small - self.userBT.winfo_reqwidth(),
-                          y=padding_small)
+    def start(self):
+        self.index = 0
+        slide = Slide(self.slides[self.index])
+        frame = SlideFrame(self.root, self.user, self, slide)
+        self.root.show_page(frame)
 
-        self.timeLB = tkinter.Label(text="8:20",
-                                    font=tkinter.font.Font(family='Calibri', size=48))
-        self.timeLB.place(x=self.canvas.winfo_reqwidth() - self.timeLB.winfo_reqwidth() - padding,
-                          y=3 * padding_small + self.userBT.winfo_reqheight())
+    def next(self, event=None):
+        if self.index < len(self.slides) - 1:
+            self.index += 1
+            slide = Slide(self.slides[self.index])
+            frame = SlideFrame(self.root, self.user, self, slide)
+            self.root.show_page(frame)
 
-        self.nextBT = tkinter.Button(text="Next",
-                                     font=tkinter.font.Font(family='Calibri', size=32))
-        self.nextBT.place(x=self.canvas.winfo_reqwidth() - self.nextBT.winfo_reqwidth() - padding,
-                          y=self.canvas.winfo_reqheight() - padding - self.nextBT.winfo_reqheight())
+            # Saving the new progress only if it's more than the last one
+            if self.index > self.highest:
+                self.highest = self.index
+                self.user.data.get('logins')[-1] = {'date': self.user.data.get('logins')[-1].get('date'),
+                                                    'progress': self.index}
+                self.root.user_manager.set(self.user)
 
-        self.backBT = tkinter.Button(text="Back",
-                                     command=lambda: self.parent.show_page(Slide(self.parent, user)),
-                                     font=tkinter.font.Font(family='Calibri', size=32))
-        self.backBT.place(x=padding,
-                          y=self.canvas.winfo_reqheight() - padding - self.backBT.winfo_reqheight())
-
-        self.titleLB = tkinter.Label(text="going to buy cigarette",
-                                     font=tkinter.font.Font(family='Calibri', size=64))
-        self.titleLB.place(x=padding,
-                           y=self.canvas.winfo_reqheight() - 3 * padding - self.titleLB.winfo_reqheight() - self.titleLB.winfo_reqheight())
-
+    def back(self, event=None):
+        if self.index > 0:
+            self.index -= 1
+            slide = Slide(self.slides[self.index])
+            frame = SlideFrame(self.root, self.user, self, slide)
+            self.root.show_page(frame)
 
 
 class User(object):
@@ -326,19 +341,9 @@ class UserManager:
             self.set(User(username, password))  # Saving the new User to the database
             return self.login(username, password)  # Call to the same function for authentication
 
-    # def login(self, username, password):
-    #
-    #     user = self.db.data.get(username)
-    #
-    #     if user is None:
-    #         user = {'password': password, 'logins': [{'date': datetime_helper.date_now(), 'progress': 0}]}
-    #         self.db.data[username] = user
-    #         self.db.save()
-    #     else:
-    #         user.get('logins').append({'date': datetime_helper.date_now(), 'progress': -1})
-    #         self.db.data[username] = user
-    #         self.db.save()
-    #     return
+
+PADDING = 25
+PADDING_SMALL = 10
 
 
 def main():
@@ -346,12 +351,27 @@ def main():
 
     user_manager = UserManager(db)
 
+    # cfg = config.Config('bologna1980.cfg')
+    #
+    # if not os.path.isfile(cfg.file):
+    #     cfg.set({
+    #         'Bologna1980': {
+    #             'Padding': PADDING,
+    #             'PaddingSmall': PADDING_SMALL
+    #         }
+    #     })
+    #     cfg.save()
+    #
+    # cfg.load()
+    #
+    # PADDING = cfg.items().get('PaddingSmall')
+    # PADDING_SMALL = cfg.items().get('Padding')
+
     # Allocating a new object that will represent the main window of the app
     window = Window(Login, user_manager, title='Good Looking window')
 
     window.mainloop()
 
 
-# Executing if the file is ran directly
-if __name__ == '__main__':
+if __name__ == '__main__':  # Executing if the file is ran directly
     main()
