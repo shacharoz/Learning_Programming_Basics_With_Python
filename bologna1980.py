@@ -1,11 +1,12 @@
 # Removed PIL import, that was only necessary in Python 2
+import threading
 import tkinter
 import tkinter.font
 import time
 import os
-import json_file
+
 import datetime_helper
-import threading
+import json_file
 
 
 class Window(tkinter.Tk):
@@ -128,24 +129,6 @@ class Login(tkinter.Frame):
                                 font=tkinter.font.Font(family='Calibri', size=24))
             self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=125)
 
-    # if user.auth.get('success') is True and user.auth.get('new') is False:
-    #     self.parent.show_page(Home(self.parent, user))
-    # elif user.auth.get('success') is True and user.auth.get('new') is True:
-    #     self.warning.config(text=f'Registration successful', fg='lime green',
-    #                         font=tkinter.font.Font(family='Calibri', size=24))
-    #     self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=150)
-    #
-    #     def show_new():
-    #         time.sleep(1)
-    #         self.parent.show_page(Home(self.parent, user))
-    #
-    #     thread = threading.Thread(target=show_new)
-    #     thread.start()
-    # else:
-    #     self.warning.config(text=user.auth.get('cause'), fg='red',
-    #                         font=tkinter.font.Font(family='Calibri', size=24))
-    #     self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=150)
-
 
 class Home(tkinter.Frame):
 
@@ -252,6 +235,7 @@ class Slide(object):
 
     def __init__(self, slide):
         """
+        This class represents each slide with a title, image and time (clock).
 
         :param slide: The data of the Slide loaded from JSON.
         :type slide: dict
@@ -269,6 +253,14 @@ class Slide(object):
 class SlideShow:
 
     def __init__(self, root, user):
+        """
+        This class represents a storyboard SlideShow.
+
+        :param root: The root Window object.
+        :type root: Window
+        :param user: The current user.
+        :type user: User
+        """
 
         _slides = json_file.JsonFile(os.path.join('assets', 'dat/slides.json'))
         _slides.load()
@@ -285,12 +277,20 @@ class SlideShow:
             self.highest = self.user.data.get('logins')[0].get('progress')
 
     def restart(self):
+        """
+        Initializes and starts the slide show from the first slide.
+        :return: None
+        """
         self.index = 0
         slide = Slide(self.slides[self.index])
         frame = SlideFrame(self.root, self.user, self, slide)
         self.root.display(frame)
 
     def start(self):
+        """
+        Initializes and starts the slide show from the last slide.
+        :return: None
+        """
         self.user.data.get('logins')[-1]['progress'] = self.highest
         self.index = self.highest
         slide = Slide(self.slides[self.highest])
@@ -299,6 +299,12 @@ class SlideShow:
         self.root.user_manager.set(self.user)
 
     def next(self, event=None):
+        """
+        Displays the next slide.
+        :param event: Ignore this.
+        :type event: tkinter.Widget
+        :return: None
+        """
         if self.index < len(self.slides) - 1:
             self.index += 1
             slide = Slide(self.slides[self.index])
@@ -314,6 +320,11 @@ class SlideShow:
                 self.root.user_manager.set(self.user)
 
     def back(self, event=None):
+        """
+        Displays the last slide.
+        :param event: Ignore this.
+        :return: None
+        """
         if self.index > 0:
             self.index -= 1
             slide = Slide(self.slides[self.index])
@@ -425,8 +436,8 @@ PADDING_SMALL = 10
 
 
 def main():
-    db = json_file.JsonFile('bologna1980.json')
 
+    db = json_file.JsonFile('bologna1980.json')
     user_manager = UserManager(db)
 
     # Allocating a new object that will represent the main window of the app
