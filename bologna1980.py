@@ -1,6 +1,7 @@
 # Removed PIL import, that was only necessary in Python 2
 import tkinter
 import tkinter.font
+import time
 import os
 import json_file
 import datetime_helper
@@ -10,7 +11,7 @@ import threading
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, user_manager, title='Window', *args, **kwargs):
+    def __init__(self, index, user_manager, *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
 
@@ -22,29 +23,24 @@ class Window(tkinter.Tk):
         # Initializing tkinter.Tk
         tkinter.Tk.__init__(self, *args, **kwargs)
 
-        self.wm_title(title)
-
         self.user_manager = user_manager
 
-        # Initializing self._frame (named with a leading underscore because it will override tkinter.Tk.frame function)
-        # and displaying the start (or index) page
+        # Initializing self._frame (leading underscore is used because otherwise this will override tkinter.Tk.frame)
+        # and displaying the start (or index) frame
         self._frame = None
-        self.show_page(index(self))
+        self.display(index(self))
 
-    def show_page(self, page):
+    def display(self, frame):
         """
         Destroys the current page and displays the given one.
-        :param page: The page to be displayed - *NOTE: this must be an instance of tkinter.Frame
+        :param frame: The frame (or page) to be displayed - *NOTE: this must be an instance of tkinter.Frame
         """
-
-        _frame = page
-
         # Destroying self._frame if it's defined
         if self._frame is not None:
             self._frame.destroy()
 
-        self._frame = _frame
-        self._frame.pack()  # Displaying the new frame (page)
+        self._frame = frame
+        self._frame.pack()  # Displaying the new frame (or page)
 
 
 class Login(tkinter.Frame):
@@ -74,8 +70,8 @@ class Login(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.pack()
 
-        self.username_entry = tkinter.Entry(self.parent, font=tkinter.font.Font(family='Calibri', size=32))
-        self.password_entry = tkinter.Entry(self.parent, show='\u2022',
+        self.username_entry = tkinter.Entry(self.parent, fg='gray', font=tkinter.font.Font(family='Calibri', size=32))
+        self.password_entry = tkinter.Entry(self.parent, fg='gray',
                                             font=tkinter.font.Font(family='Calibri', size=32))
 
         self.username_entry.insert(0, 'Username')
@@ -83,15 +79,20 @@ class Login(tkinter.Frame):
 
         def delete(event):
             event.widget.delete(0, 'end')
+            event.widget.config(fg='black')
+            if event.widget == self.password_entry:
+                event.widget.config(show='\u2022')
+            event.widget.unbind('<Button-1>')
+
         self.username_entry.bind('<Button-1>', delete)
         self.password_entry.bind('<Button-1>', delete)
 
         self.username_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.username_entry.winfo_reqwidth() / 2, y=200)
         self.password_entry.place(x=self.canvas.winfo_reqwidth() / 2 - self.password_entry.winfo_reqwidth() / 2, y=275)
 
-        self.loginBT = tkinter.Button(text='Login', font=tkinter.font.Font(family='Calibri', size=24),
+        self.loginBT = tkinter.Button(text='Login / Register', font=tkinter.font.Font(family='Calibri', size=24),
                                       command=self.login)
-        self.loginBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.loginBT.winfo_reqwidth() / 2, y=400)
+        self.loginBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.loginBT.winfo_reqwidth() / 2, y=350)
         self.warning = tkinter.Label()
 
         self.username_entry.bind('<Return>', self.login)
@@ -101,14 +102,49 @@ class Login(tkinter.Frame):
         self.focus_set()
 
     def login(self, event=None):
+
         user = self.parent.user_manager.login(self.username_entry.get(), self.password_entry.get())
 
         if user.auth.get('success') is True:
-            self.parent.show_page(Home(self.parent, user))
+
+            def flash(message, function, **kwargs):
+                self.warning.config(text=message, font=tkinter.font.Font(family='Calibri', size=24), **kwargs)
+                self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=125)
+                time.sleep(1)
+                function()
+
+            if user.auth.get('new') is True:
+                flash_message = 'Registration successful'
+            else:
+                flash_message = f'Welcome back {user.name}'
+
+            threading.Thread(target=lambda: flash(
+                flash_message,
+                lambda: self.parent.display(Home(self.parent, user)),
+                fg='lime green'
+            )).start()
         else:
-            self.warning.config(text='Login failed: ' + user.auth.get('cause'), fg='red',
+            self.warning.config(text=user.auth.get('cause'), fg='red',
                                 font=tkinter.font.Font(family='Calibri', size=24))
-            self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=345)
+            self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=125)
+
+    # if user.auth.get('success') is True and user.auth.get('new') is False:
+    #     self.parent.show_page(Home(self.parent, user))
+    # elif user.auth.get('success') is True and user.auth.get('new') is True:
+    #     self.warning.config(text=f'Registration successful', fg='lime green',
+    #                         font=tkinter.font.Font(family='Calibri', size=24))
+    #     self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=150)
+    #
+    #     def show_new():
+    #         time.sleep(1)
+    #         self.parent.show_page(Home(self.parent, user))
+    #
+    #     thread = threading.Thread(target=show_new)
+    #     thread.start()
+    # else:
+    #     self.warning.config(text=user.auth.get('cause'), fg='red',
+    #                         font=tkinter.font.Font(family='Calibri', size=24))
+    #     self.warning.place(x=self.canvas.winfo_reqwidth() / 2 - self.warning.winfo_reqwidth() / 2, y=150)
 
 
 class Home(tkinter.Frame):
@@ -159,7 +195,7 @@ class SlideFrame(tkinter.Frame):
 
         self.slide_show = slide_show
 
-        self.parent.wm_title(f'Bologna 1980 - {slide.title}')
+        self.parent.wm_title(f'Bologna 1980 Story - {slide.title}')
 
         self.canvas = tkinter.Canvas(self.parent, width=1280, height=720)  # The canvas on which the image will be drawn
 
@@ -174,13 +210,13 @@ class SlideFrame(tkinter.Frame):
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
         self.homeBT = tkinter.Button(text='Bologna 1980',
-                                     command=lambda: self.parent.show_page(Login(self.parent)),
+                                     command=lambda: self.parent.display(Login(self.parent)),
                                      font=tkinter.font.Font(family='Calibri', size=16))
 
         self.homeBT.place(x=PADDING_SMALL, y=PADDING_SMALL)
 
         self.userBT = tkinter.Button(text=f'{user.name}',
-                                     command=lambda: self.parent.show_page(Home(self.parent, user)),
+                                     command=lambda: self.parent.display(Home(self.parent, user)),
                                      font=tkinter.font.Font(family='Calibri', size=16))
 
         self.userBT.place(x=self.canvas.winfo_reqwidth() - PADDING_SMALL - self.userBT.winfo_reqwidth(),
@@ -252,14 +288,14 @@ class SlideShow:
         self.index = 0
         slide = Slide(self.slides[self.index])
         frame = SlideFrame(self.root, self.user, self, slide)
-        self.root.show_page(frame)
+        self.root.display(frame)
 
     def start(self):
         self.user.data.get('logins')[-1]['progress'] = self.highest
         self.index = self.highest
         slide = Slide(self.slides[self.highest])
         frame = SlideFrame(self.root, self.user, self, slide)
-        self.root.show_page(frame)
+        self.root.display(frame)
         self.root.user_manager.set(self.user)
 
     def next(self, event=None):
@@ -267,7 +303,7 @@ class SlideShow:
             self.index += 1
             slide = Slide(self.slides[self.index])
             frame = SlideFrame(self.root, self.user, self, slide)
-            self.root.show_page(frame)
+            self.root.display(frame)
 
             print(self.index, self.highest)
             # Saving the new progress only if it's more than the last one
@@ -282,7 +318,7 @@ class SlideShow:
             self.index -= 1
             slide = Slide(self.slides[self.index])
             frame = SlideFrame(self.root, self.user, self, slide)
-            self.root.show_page(frame)
+            self.root.display(frame)
 
 
 class User(object):
@@ -339,7 +375,7 @@ class UserManager:
         else:
             raise TypeError(f"'{user}' is not a valid User.")
 
-    def login(self, username, password):
+    def login(self, username, password, new=False):
         """
         Loads a user from the database and authenticates him.
 
@@ -347,6 +383,8 @@ class UserManager:
         :type username: str
         :param password: The user's password
         :type password: str
+        :param new: Whether the user is newly created
+        :type new: bool
         :return: The User loaded from the database
         """
         data = self.db.data.get(User(username).id)  # Retrieving the data, if no user is found this will be set to None
@@ -356,14 +394,30 @@ class UserManager:
             user.data.get('logins').append({'date': datetime_helper.date_now(), 'progress': 0})
             # Authenticating the user
             if user.data.get('password') == password:
-                user.auth = {'success': True, 'cause': None}  # Setting the authentication to successful
+                # Setting the authentication to successful
+                user.auth = {'success': True, 'cause': None}
             else:
-                user.auth = {'success': False, 'cause': 'Wrong password!'}  # Setting the authentication to unsuccessful
+                # Setting the authentication to unsuccessful
+                user.auth = {'success': False, 'cause': 'Login failed: Wrong password!'}
+            user.auth['new'] = new
             self.set(user)
             return user  # Returns the authenticated user
-        else:
+        elif len(password) >= 6 and len(username) >= 3:
             self.set(User(username, password))  # Saving the new User to the database
-            return self.login(username, password)  # Call to the same function for authentication
+            return self.login(username, password, new=True)  # Call to itself for authentication
+        else:
+            cause = None
+            if len(password) < 6 and len(username) < 3:
+                cause = 'Registration failed: password and username are too short'
+            elif len(password) < 6:
+                cause = 'Registration failed: given password is too short'
+            elif len(username) < 3:
+                cause = f'Registration failed: given username is too short'
+            user = User(username, auth={
+                'success': False,
+                'cause': cause
+            })
+            return user
 
 
 PADDING = 25
@@ -375,24 +429,8 @@ def main():
 
     user_manager = UserManager(db)
 
-    # cfg = config.Config('bologna1980.cfg')
-    #
-    # if not os.path.isfile(cfg.file):
-    #     cfg.set({
-    #         'Bologna1980': {
-    #             'Padding': PADDING,
-    #             'PaddingSmall': PADDING_SMALL
-    #         }
-    #     })
-    #     cfg.save()
-    #
-    # cfg.load()
-    #
-    # PADDING = cfg.items().get('PaddingSmall')
-    # PADDING_SMALL = cfg.items().get('Padding')
-
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager, title='Bologna 1980')
+    window = Window(Login, user_manager)
 
     window.mainloop()
 
