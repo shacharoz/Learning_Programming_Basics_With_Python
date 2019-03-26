@@ -272,7 +272,7 @@ class SlideShow:
         self.index = 0
         logins = user.data.get('logins')
         if len(logins) > 1:
-            self.highest = self.user.data.get('logins')[::-1][1].get('progress')
+            self.highest = self.user.data.get('logins')[-2].get('progress')
         else:
             self.highest = self.user.data.get('logins')[0].get('progress')
 
@@ -311,7 +311,6 @@ class SlideShow:
             frame = SlideFrame(self.root, self.user, self, slide)
             self.root.display(frame)
 
-            print(self.index, self.highest)
             # Saving the new progress only if it's more than the last one
             if self.index > self.highest:
                 self.highest = self.index
@@ -319,7 +318,7 @@ class SlideShow:
                                                     'progress': self.index}
                 self.root.user_manager.set(self.user)
 
-    def back(self, event=None):
+    def back(self, event = None):
         """
         Displays the last slide.
         :param event: Ignore this.
