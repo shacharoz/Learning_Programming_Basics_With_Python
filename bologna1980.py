@@ -1,4 +1,3 @@
-# Removed PIL import, that was only necessary in Python 2
 import threading
 import tkinter
 import tkinter.font
@@ -40,8 +39,8 @@ class Window(tkinter.Tk):
         if self._frame is not None:
             self._frame.destroy()
 
-        self._frame = frame
-        self._frame.pack()  # Displaying the new frame (or page)
+        self._frame = frame  # Switching self._frame to current frame
+        self._frame.pack()   # Displaying the new frame (or page)
 
 
 class Login(tkinter.Frame):
@@ -441,7 +440,7 @@ def main():
 
     # Allocating a new object that will represent the main window of the app
     window = Window(Login, user_manager)
-
+    # Running the main loop of the Application
     window.mainloop()
 
 
