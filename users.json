@@ -1,0 +1,14 @@
+{
+  "susanna": {
+    "password": "pianoro",
+    "role": "teacher"
+  },
+  "shachar": {
+    "password": "shachar",
+    "role": "student"
+  },
+  "federico": {
+    "password": "federico",
+    "role": "admin"
+  }
+}

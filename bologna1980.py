@@ -448,7 +448,7 @@ PADDING_SMALL = 10
 
 
 def main():
-    users_db = json_file.JsonFile('bologna1980.json')
+    users_db = json_file.JsonFile('users.json')
     logins_db = json_file.JsonFile('logins.json')
     user_manager = UserManager(users_db, logins_db)
 
