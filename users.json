@@ -10,5 +10,11 @@
   "federico": {
     "password": "federico",
     "role": "admin"
+  },
+  "alessandro": {
+    "password": "testing"
+  },
+  "filippo": {
+    "password": "testing"
   }
 }

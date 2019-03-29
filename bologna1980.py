@@ -8,6 +8,15 @@ import datetime_helper
 import json_file
 
 
+
+from enum import Enum
+
+class Permission(Enum):
+    ADMIN = 1
+    TEACHER = 2
+    STUDENT = 3
+
+
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
@@ -332,7 +341,15 @@ class SlideShow:
 
 class User(object):
 
-    def __init__(self, username, password=None, data=None, auth=None, logins=None):
+    def __init__(
+            self,
+            username,
+            password=None,
+            data=None,
+            auth=None,
+            logins=None,
+            permissions=None
+    ):
         """
         This class represents a user.
 
@@ -357,8 +374,18 @@ class User(object):
 
         if data is not None:
             self.data = data
+        elif password is not None and permissions is not None:
+            self.data = {'password': password, 'role': permissions}  # Initializing the data
         elif password is not None:
-            self.data = {'password': password}  # Initializing the data
+            self.data = {'password': password, 'role': Permission.STUDENT }
+
+        permissions_db = json_file.JsonFile('permissions.json')
+        permissions_db.load()
+
+        self.permission = permissions_db.data.get(self.data.get('role'))
+
+        self.permission = Permission.STUDENT
+
 
     @staticmethod
     def to_id(username):
@@ -450,6 +477,7 @@ PADDING_SMALL = 10
 def main():
     users_db = json_file.JsonFile('users.json')
     logins_db = json_file.JsonFile('logins.json')
+
     user_manager = UserManager(users_db, logins_db)
 
     # Allocating a new object that will represent the main window of the app
@@ -460,3 +488,8 @@ def main():
 
 if __name__ == '__main__':  # Executing if the file is ran directly
     main()
+
+
+
+
+
