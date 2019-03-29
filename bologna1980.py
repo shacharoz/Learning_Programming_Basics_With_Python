@@ -40,7 +40,7 @@ class Window(tkinter.Tk):
             self._frame.destroy()
 
         self._frame = frame  # Switching self._frame to current frame
-        self._frame.pack()   # Displaying the new frame (or page)
+        self._frame.pack()  # Displaying the new frame (or page)
 
 
 class Login(tkinter.Frame):
@@ -150,7 +150,7 @@ class Home(tkinter.Frame):
         self.panel.place(x=0, y=0, relwidth=1, relheight=1)  # Places the image without padding
         self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-        logins = user.data.get('logins')
+        logins = user.logins
         if len(logins) > 1:
             self.label = tkinter.Label(text=f"Last login: {logins[::-1][1].get('date')}.",
                                        font=tkinter.font.Font(family='Calibri', size=20))
@@ -269,11 +269,11 @@ class SlideShow:
         self.user = user
         self.slides = slides
         self.index = 0
-        logins = user.data.get('logins')
+        logins = user.logins
         if len(logins) > 1:
-            self.highest = self.user.data.get('logins')[-2].get('progress')
+            self.highest = self.user.logins[-2].get('progress')
         else:
-            self.highest = self.user.data.get('logins')[0].get('progress')
+            self.highest = self.user.logins[0].get('progress')
 
     def restart(self):
         """
@@ -290,7 +290,7 @@ class SlideShow:
         Initializes and starts the slide show from the last slide.
         :return: None
         """
-        self.user.data.get('logins')[-1]['progress'] = self.highest
+        self.user.logins[-1]['progress'] = self.highest
         self.index = self.highest
         slide = Slide(self.slides[self.highest])
         frame = SlideFrame(self.root, self.user, self, slide)
@@ -313,11 +313,11 @@ class SlideShow:
             # Saving the new progress only if it's more than the last one
             if self.index > self.highest:
                 self.highest = self.index
-                self.user.data.get('logins')[-1] = {'date': self.user.data.get('logins')[-1].get('date'),
-                                                    'progress': self.index}
+                self.user.logins[-1] = {'date': self.user.logins[-1].get('date'),
+                                        'progress': self.index}
                 self.root.user_manager.set(self.user)
 
-    def back(self, event = None):
+    def back(self, event=None):
         """
         Displays the last slide.
         :param event: Ignore this.
@@ -332,7 +332,7 @@ class SlideShow:
 
 class User(object):
 
-    def __init__(self, username, password=None, data=None, auth=None):
+    def __init__(self, username, password=None, data=None, auth=None, logins=None):
         """
         This class represents a user.
 
@@ -351,25 +351,37 @@ class User(object):
         """
         self.name = username
         self.auth = auth
+        self.logins = logins
 
-        self.id = self.name.replace(' ', '_').lower()
+        self.id = User.to_id(username)
 
         if data is not None:
             self.data = data
         elif password is not None:
-            self.data = {'password': password, 'logins': []}  # Initializing the data
+            self.data = {'password': password}  # Initializing the data
+
+    @staticmethod
+    def to_id(username):
+        return username.replace(' ', '_').lower()
 
 
 class UserManager:
 
-    def __init__(self, db):
+    def __init__(self, db, logins_db):
 
         self.db = db
+
+        self.logins_db = logins_db
 
         if os.path.isfile(self.db.container):
             self.db.load()
         else:
             self.db.save()
+
+        if os.path.isfile(self.logins_db.container):
+            self.logins_db.load()
+        else:
+            self.logins_db.save()
 
     def set(self, user):
         """
@@ -381,6 +393,8 @@ class UserManager:
         if isinstance(user, User):
             self.db.data[user.id] = user.data
             self.db.save()
+            self.logins_db.data[user.id] = user.logins
+            self.logins_db.save()
         else:
             raise TypeError(f"'{user}' is not a valid User.")
 
@@ -399,8 +413,8 @@ class UserManager:
         data = self.db.data.get(User(username).id)  # Retrieving the data, if no user is found this will be set to None
 
         if data is not None:
-            user = User(username, data=data)
-            user.data.get('logins').append({'date': datetime_helper.date_now(), 'progress': 0})
+            user = User(username, data=data, logins=self.logins_db.data.get(User.to_id(username)))
+            user.logins.append({'date': datetime_helper.date_now(), 'progress': 0})
             # Authenticating the user
             if user.data.get('password') == password:
                 # Setting the authentication to successful
@@ -412,7 +426,7 @@ class UserManager:
             self.set(user)
             return user  # Returns the authenticated user
         elif len(password) >= 6 and len(username) >= 3:
-            self.set(User(username, password))  # Saving the new User to the database
+            self.set(User(username, password, logins=[]))  # Saving the new User to the database
             return self.login(username, password, new=True)  # Call to itself for authentication
         else:
             cause = None
@@ -434,9 +448,9 @@ PADDING_SMALL = 10
 
 
 def main():
-
-    db = json_file.JsonFile('bologna1980.json')
-    user_manager = UserManager(db)
+    users_db = json_file.JsonFile('bologna1980.json')
+    logins_db = json_file.JsonFile('logins.json')
+    user_manager = UserManager(users_db, logins_db)
 
     # Allocating a new object that will represent the main window of the app
     window = Window(Login, user_manager)
