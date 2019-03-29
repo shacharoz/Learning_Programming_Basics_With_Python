@@ -1,0 +1,14 @@
+{
+  "student": {
+    "read": true,
+    "write": false
+  },
+  "teacher": {
+    "read": true,
+    "write": true
+  },
+  "admin": {
+    "read": false,
+    "write": true
+  }
+}
