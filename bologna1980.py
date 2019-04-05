@@ -2,19 +2,19 @@ import threading
 import tkinter
 import tkinter.font
 import time
+import sys
 import os
 
 import datetime_helper
 import json_file
 
 
-
-from enum import Enum
-
-class Permission(Enum):
-    ADMIN = 1
-    TEACHER = 2
-    STUDENT = 3
+# from enum import Enum
+#
+# class Permission(Enum):
+#     ADMIN = 1
+#     TEACHER = 2
+#     STUDENT = 3
 
 
 class Window(tkinter.Tk):
@@ -28,7 +28,6 @@ class Window(tkinter.Tk):
         :param args: Special Python arguments. All the arguments required by tkinter.Tk
         :param kwargs: Special Python arguments. All the non-positional arguments required by tkinter.Tk
         """
-
         # Initializing tkinter.Tk
         tkinter.Tk.__init__(self, *args, **kwargs)
 
@@ -382,9 +381,9 @@ class User(object):
         permissions_db = json_file.JsonFile('permissions.json')
         permissions_db.load()
 
-        self.permission = permissions_db.data.get(self.data.get('role'))
-
-        self.permission = Permission.STUDENT
+        # self.permission = permissions_db.data.get(self.data.get('role'))
+        #
+        # self.permission = Permission.STUDENT
 
 
     @staticmethod
@@ -440,7 +439,8 @@ class UserManager:
         data = self.db.data.get(User(username).id)  # Retrieving the data, if no user is found this will be set to None
 
         if data is not None:
-            user = User(username, data=data, logins=self.logins_db.data.get(User.to_id(username)))
+            logins = self.logins_db.data.get(User.to_id(username))
+            user = User(username, data=data, logins=logins if logins is not None else [])
             user.logins.append({'date': datetime_helper.date_now(), 'progress': 0})
             # Authenticating the user
             if user.data.get('password') == password:
@@ -488,8 +488,3 @@ def main():
 
 if __name__ == '__main__':  # Executing if the file is ran directly
     main()
-
-
-
-
-

@@ -1,52 +1,57 @@
 [
   {
-    "title": "Getting to the station",
-    "image": "tabaccheria.png",
-    "time": "9:15"
-  },
-  {
-    "title": "Buying tickets",
-    "image": "Corriere-Web-Sezioni.png",
+    "title": "Andare in stazione",
+    "image": "1.png",
     "time": "9:30"
   },
   {
-    "title": "Buying cigarettes",
-    "image": "tabaccheria.png",
-    "time": "10:00"
+    "title": "Comprare un sandwhich da un bar",
+    "image": "3.png",
+    "time": "10:15"
   },
   {
-    "title": "Explosion",
-    "image": "Corriere-Web-Sezioni.png",
+    "title": "Esplosione",
+    "image": "4.png",
     "time": "10:25"
   },
   {
-    "title": "First aid",
-    "image": "tabaccheria.png",
-    "time": "10:30"
+    "title": "Esplosione",
+    "image": "5.png",
+    "time": "10:25"
   },
   {
-    "title": "Ambulances and rescue services",
-    "image": "Corriere-Web-Sezioni.png",
+    "title": "Le macerie dopo l'esplosione",
+    "image": "6.png",
     "time": "10:35"
   },
   {
-    "title": "Buses, taxis and local people help",
-    "image": "tabaccheria.png",
-    "time": "10:35"
-  },
-  {
-    "title": "Protest in Piazza Maggiore",
-    "image": "Corriere-Web-Sezioni.png",
+    "title": "Orologio fermo",
+    "image": "8.png",
     "time": "9:50"
   },
   {
-    "title": "The arrival of the Italian president",
-    "image": "tabaccheria.png",
+    "title": "Aiutare il prossimo",
+    "image": "9.png",
+    "time": "10:35"
+  },
+  {
+    "title": "Trasporto di emergenza",
+    "image": "10.png",
+    "time": "9:50"
+  },
+  {
+    "title": "Incontro in Piazza Maggiore",
+    "image": "11.png",
     "time": "17:20"
   },
   {
-    "title": "President's speech",
-    "image": "Corriere-Web-Sezioni.png",
+    "title": "Il discorso del primo ministro",
+    "image": "12.png",
+    "time": "17:30"
+  },
+  {
+    "title": "Il discorso del primo ministro",
+    "image": "13.png",
     "time": "17:30"
   }
 ]
