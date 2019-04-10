@@ -1,20 +1,24 @@
 {
-  "susanna": {
-    "password": "pianoro",
-    "role": "teacher"
-  },
-  "shachar": {
-    "password": "shachar",
-    "role": "student"
-  },
-  "federico": {
-    "password": "federico",
-    "role": "admin"
-  },
-  "alessandro": {
-    "password": "testing"
-  },
-  "filippo": {
-    "password": "testing"
-  }
+  "test": [
+    {
+      "date": "29-03-2019 17:02:53",
+      "progress": 0
+    }
+  ],
+  "alessandro": [
+    {
+      "date": "29-03-2019 17:15:18",
+      "progress": 6
+    },
+    {
+      "date": "29-03-2019 17:16:02",
+      "progress": 6
+    }
+  ],
+  "filippo": [
+    {
+      "date": "29-03-2019 17:15:45",
+      "progress": 0
+    }
+  ]
 }

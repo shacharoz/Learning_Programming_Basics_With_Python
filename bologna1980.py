@@ -7,14 +7,9 @@ import os
 import datetime_helper
 import json_file
 
-
-
-from enum import Enum
-
-class Permission(Enum):
-    ADMIN = 1
-    TEACHER = 2
-    STUDENT = 3
+ADMIN = 1
+TEACHER = 2
+STUDENT = 3
 
 
 class Window(tkinter.Tk):
@@ -342,13 +337,13 @@ class SlideShow:
 class User(object):
 
     def __init__(
-            self,
-            username,
-            password=None,
-            data=None,
-            auth=None,
-            logins=None,
-            permissions=None
+        self,
+        username,
+        password=None,
+        data=None,
+        auth=None,
+        logins=None,
+        permissions=None
     ):
         """
         This class represents a user.
@@ -376,20 +371,34 @@ class User(object):
             self.data = data
         elif password is not None and permissions is not None:
             self.data = {'password': password, 'role': permissions}  # Initializing the data
-        elif password is not None:
-            self.data = {'password': password, 'role': Permission.STUDENT }
-
+        else:
+            self.data = {'password': password, 'role': STUDENT}
         permissions_db = json_file.JsonFile('permissions.json')
         permissions_db.load()
 
         self.permission = permissions_db.data.get(self.data.get('role'))
 
-        self.permission = Permission.STUDENT
+        self.permission = STUDENT
 
+    @staticmethod
+    def validate(username: str):
+        """
+        Returns whether a username contains invalid characters, i.e. special chars
+        like the backslash that would allow users to make a username spread on more
+        lines.
+        :param username: The username to validate.
+        :return: True if the username does not contain any disallowed char, False if it does.
+        """
+        invalid_chars = '§@#*?!^|"\'€£$%&/\\<>()[]{}=:;,_'
+        for i_char in invalid_chars:
+            if i_char in username:
+                return False
+        return True
 
     @staticmethod
     def to_id(username):
-        return username.replace(' ', '_').lower()
+        # Since
+        return username.replace(' ', '_')
 
 
 class UserManager:
@@ -445,10 +454,16 @@ class UserManager:
             # Authenticating the user
             if user.data.get('password') == password:
                 # Setting the authentication to successful
-                user.auth = {'success': True, 'cause': None}
+                user.auth = {
+                    'success': True,
+                    'cause': None
+                }
             else:
                 # Setting the authentication to unsuccessful
-                user.auth = {'success': False, 'cause': 'Login failed: Wrong password!'}
+                user.auth = {
+                    'success': False,
+                    'cause': 'Login failed: Wrong password!'
+                }
             user.auth['new'] = new
             self.set(user)
             return user  # Returns the authenticated user
@@ -457,17 +472,27 @@ class UserManager:
             return self.login(username, password, new=True)  # Call to itself for authentication
         else:
             cause = None
-            if len(password) < 6 and len(username) < 3:
+            if not User.validate(username):
+                cause = 'Registration failed: username contains invalid characters: §@#*?!^|"\'€£$%&/\\<>()[]{}=:;,_'
+            elif len(password) < 6 and len(username) < 3:
                 cause = 'Registration failed: password and username are too short'
             elif len(password) < 6:
                 cause = 'Registration failed: given password is too short'
             elif len(username) < 3:
-                cause = f'Registration failed: given username is too short'
+                cause = 'Registration failed: given username is too short'
             user = User(username, auth={
                 'success': False,
                 'cause': cause
             })
             return user
+
+
+class PermManager(object):
+
+    def __init__(self):
+        perms_json = json_file.JsonFile('permissions.json')
+        perms_json.load()
+        self.permissions = perms_json.data
 
 
 PADDING = 25
@@ -488,8 +513,3 @@ def main():
 
 if __name__ == '__main__':  # Executing if the file is ran directly
     main()
-
-
-
-
-
