@@ -20,5 +20,13 @@
       "date": "29-03-2019 17:15:45",
       "progress": 0
     }
-  ]
+  ],
+  "Federico": {
+    "password": "federico",
+    "role": "student"
+  },
+  "federico": {
+    "password": "Password",
+    "role": "student"
+  }
 }

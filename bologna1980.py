@@ -15,10 +15,9 @@ STUDENT = 3
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, user_manager, *args, **kwargs):
+    def __init__(self, index, user_manager, perm_manager, *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
-
         :param index: The start page
         :param args: Special Python arguments. All the arguments required by tkinter.Tk
         :param kwargs: Special Python arguments. All the non-positional arguments required by tkinter.Tk
@@ -28,6 +27,7 @@ class Window(tkinter.Tk):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
         self.user_manager = user_manager
+        self.perm_manager = perm_manager
 
         # Initializing self._frame (leading underscore is used because otherwise this will override tkinter.Tk.frame)
         # and displaying the start (or index) frame
@@ -171,6 +171,9 @@ class Home(tkinter.Frame):
                                          font=tkinter.font.Font(family='Calibri', size=32))
         self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
 
+        if self.parent.perm_manager.check(user, 'read'):
+            print(user)
+
 
 class SlideFrame(tkinter.Frame):
 
@@ -239,7 +242,6 @@ class Slide(object):
     def __init__(self, slide):
         """
         This class represents each slide with a title, image and time (clock).
-
         :param slide: The data of the Slide loaded from JSON.
         :type slide: dict
         """
@@ -258,7 +260,6 @@ class SlideShow:
     def __init__(self, root, user):
         """
         This class represents a storyboard SlideShow.
-
         :param root: The root Window object.
         :type root: Window
         :param user: The current user.
@@ -347,16 +348,12 @@ class User(object):
     ):
         """
         This class represents a user.
-
         :param username: The name of the User.
         :type username: str
-
         :param password: The password of the User, optional if the data is given.
         :type password: str
-
         :param data: The data of the User, optional if the password is given.
         :type data: dict
-
         :param auth: Authentication dict. It should have this format
                      {'success': bool, 'cause': str or NoneType if successful}
         :type auth: dict
@@ -372,13 +369,7 @@ class User(object):
         elif password is not None and permissions is not None:
             self.data = {'password': password, 'role': permissions}  # Initializing the data
         else:
-            self.data = {'password': password, 'role': STUDENT}
-        permissions_db = json_file.JsonFile('permissions.json')
-        permissions_db.load()
-
-        self.permission = permissions_db.data.get(self.data.get('role'))
-
-        self.permission = STUDENT
+            self.data = {'password': password, 'role': 'student'}
 
     @staticmethod
     def validate(username: str):
@@ -422,7 +413,6 @@ class UserManager:
     def set(self, user):
         """
         Updates (or adds if no valid user is found) a user to the database.
-
         :param user: The user to update (or add) to the database.
         :type user: User
         """
@@ -437,7 +427,6 @@ class UserManager:
     def login(self, username, password, new=False):
         """
         Loads a user from the database and authenticates him.
-
         :param username: The user's name
         :type username: str
         :param password: The user's password
@@ -494,6 +483,11 @@ class PermManager(object):
         perms_json.load()
         self.permissions = perms_json.data
 
+    def check(self, user, action='read'):
+        role = user.data['role']
+        role_perms = self.permissions[role]
+        return role_perms[action]
+
 
 PADDING = 25
 PADDING_SMALL = 10
@@ -504,9 +498,10 @@ def main():
     logins_db = json_file.JsonFile('logins.json')
 
     user_manager = UserManager(users_db, logins_db)
+    perm_manager = PermManager()
 
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager)
+    window = Window(Login, user_manager, perm_manager)
     # Running the main loop of the Application
     window.mainloop()
 
