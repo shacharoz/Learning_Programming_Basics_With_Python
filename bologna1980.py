@@ -8,6 +8,9 @@ import os
 import datetime_helper
 import json_file
 
+ADMIN = 1
+TEACHER = 2
+STUDENT = 3
 
 # from enum import Enum
 #
@@ -16,14 +19,12 @@ import json_file
 #     TEACHER = 2
 #     STUDENT = 3
 
-
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, user_manager, *args, **kwargs):
+    def __init__(self, index, user_manager, perm_manager, *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
-
         :param index: The start page
         :param args: Special Python arguments. All the arguments required by tkinter.Tk
         :param kwargs: Special Python arguments. All the non-positional arguments required by tkinter.Tk
@@ -32,6 +33,7 @@ class Window(tkinter.Tk):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
         self.user_manager = user_manager
+        self.perm_manager = perm_manager
 
         # Initializing self._frame (leading underscore is used because otherwise this will override tkinter.Tk.frame)
         # and displaying the start (or index) frame
@@ -175,6 +177,9 @@ class Home(tkinter.Frame):
                                          font=tkinter.font.Font(family='Calibri', size=32))
         self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
 
+        if self.parent.perm_manager.check(user, 'read'):
+            print(user)
+
 
 class SlideFrame(tkinter.Frame):
 
@@ -243,7 +248,6 @@ class Slide(object):
     def __init__(self, slide):
         """
         This class represents each slide with a title, image and time (clock).
-
         :param slide: The data of the Slide loaded from JSON.
         :type slide: dict
         """
@@ -262,7 +266,6 @@ class SlideShow:
     def __init__(self, root, user):
         """
         This class represents a storyboard SlideShow.
-
         :param root: The root Window object.
         :type root: Window
         :param user: The current user.
@@ -341,26 +344,22 @@ class SlideShow:
 class User(object):
 
     def __init__(
-            self,
-            username,
-            password=None,
-            data=None,
-            auth=None,
-            logins=None,
-            permissions=None
+        self,
+        username,
+        password=None,
+        data=None,
+        auth=None,
+        logins=None,
+        permissions=None
     ):
         """
         This class represents a user.
-
         :param username: The name of the User.
         :type username: str
-
         :param password: The password of the User, optional if the data is given.
         :type password: str
-
         :param data: The data of the User, optional if the password is given.
         :type data: dict
-
         :param auth: Authentication dict. It should have this format
                      {'success': bool, 'cause': str or NoneType if successful}
         :type auth: dict
@@ -375,20 +374,28 @@ class User(object):
             self.data = data
         elif password is not None and permissions is not None:
             self.data = {'password': password, 'role': permissions}  # Initializing the data
-        elif password is not None:
-            self.data = {'password': password, 'role': Permission.STUDENT }
+        else:
+            self.data = {'password': password, 'role': 'student'}
 
-        permissions_db = json_file.JsonFile('permissions.json')
-        permissions_db.load()
-
-        # self.permission = permissions_db.data.get(self.data.get('role'))
-        #
-        # self.permission = Permission.STUDENT
-
+    @staticmethod
+    def validate(username: str):
+        """
+        Returns whether a username contains invalid characters, i.e. special chars
+        like the backslash that would allow users to make a username spread on more
+        lines.
+        :param username: The username to validate.
+        :return: True if the username does not contain any disallowed char, False if it does.
+        """
+        invalid_chars = '§@#*?!^|"\'€£$%&/\\<>()[]{}=:;,_'
+        for i_char in invalid_chars:
+            if i_char in username:
+                return False
+        return True
 
     @staticmethod
     def to_id(username):
-        return username.replace(' ', '_').lower()
+        # Since
+        return username.replace(' ', '_')
 
 
 class UserManager:
@@ -412,7 +419,6 @@ class UserManager:
     def set(self, user):
         """
         Updates (or adds if no valid user is found) a user to the database.
-
         :param user: The user to update (or add) to the database.
         :type user: User
         """
@@ -427,7 +433,6 @@ class UserManager:
     def login(self, username, password, new=False):
         """
         Loads a user from the database and authenticates him.
-
         :param username: The user's name
         :type username: str
         :param password: The user's password
@@ -445,10 +450,16 @@ class UserManager:
             # Authenticating the user
             if user.data.get('password') == password:
                 # Setting the authentication to successful
-                user.auth = {'success': True, 'cause': None}
+                user.auth = {
+                    'success': True,
+                    'cause': None
+                }
             else:
                 # Setting the authentication to unsuccessful
-                user.auth = {'success': False, 'cause': 'Login failed: Wrong password!'}
+                user.auth = {
+                    'success': False,
+                    'cause': 'Login failed: Wrong password!'
+                }
             user.auth['new'] = new
             self.set(user)
             return user  # Returns the authenticated user
@@ -457,17 +468,32 @@ class UserManager:
             return self.login(username, password, new=True)  # Call to itself for authentication
         else:
             cause = None
-            if len(password) < 6 and len(username) < 3:
+            if not User.validate(username):
+                cause = 'Registration failed: username contains invalid characters: §@#*?!^|"\'€£$%&/\\<>()[]{}=:;,_'
+            elif len(password) < 6 and len(username) < 3:
                 cause = 'Registration failed: password and username are too short'
             elif len(password) < 6:
                 cause = 'Registration failed: given password is too short'
             elif len(username) < 3:
-                cause = f'Registration failed: given username is too short'
+                cause = 'Registration failed: given username is too short'
             user = User(username, auth={
                 'success': False,
                 'cause': cause
             })
             return user
+
+
+class PermManager(object):
+
+    def __init__(self):
+        perms_json = json_file.JsonFile('permissions.json')
+        perms_json.load()
+        self.permissions = perms_json.data
+
+    def check(self, user, action='read'):
+        role = user.data['role']
+        role_perms = self.permissions[role]
+        return role_perms[action]
 
 
 PADDING = 25
@@ -479,9 +505,10 @@ def main():
     logins_db = json_file.JsonFile('logins.json')
 
     user_manager = UserManager(users_db, logins_db)
+    perm_manager = PermManager()
 
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager)
+    window = Window(Login, user_manager, perm_manager)
     # Running the main loop of the Application
     window.mainloop()
 
