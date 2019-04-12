@@ -1,6 +1,8 @@
+import playsound
 import threading
 import tkinter
 import tkinter.font
+import json
 import time
 import sys
 import os
@@ -8,9 +10,12 @@ import os
 import datetime_helper
 import json_file
 
+track: threading.Thread = None
+
 ADMIN = 1
 TEACHER = 2
 STUDENT = 3
+
 
 # from enum import Enum
 #
@@ -22,7 +27,7 @@ STUDENT = 3
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, user_manager, perm_manager, *args, **kwargs):
+    def __init__(self, index, user_manager, perm_manager, slides_json, *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
         :param index: The start page
@@ -34,11 +39,23 @@ class Window(tkinter.Tk):
 
         self.user_manager = user_manager
         self.perm_manager = perm_manager
+        slides_json.load()
+        self.slides_data = slides_json.data
 
         # Initializing self._frame (leading underscore is used because otherwise this will override tkinter.Tk.frame)
         # and displaying the start (or index) frame
         self._frame = None
         self.display(index(self))
+
+        # scrollbar = Scrollbar(root)
+        # scrollbar.pack(side=RIGHT, fill=Y)
+        #
+        # mylist = Listbox(root, yscrollcommand=scrollbar.set)
+        # for line in range(100):
+        #     mylist.insert(END, "This is line number " + str(line))
+        #
+        # mylist.pack(side=LEFT, fill=BOTH)
+        # scrollbar.config(command=mylist.yview)
 
     def display(self, frame):
         """
@@ -51,6 +68,12 @@ class Window(tkinter.Tk):
 
         self._frame = frame  # Switching self._frame to current frame
         self._frame.pack()  # Displaying the new frame (or page)
+        self.protocol('WM_DELETE_WINDOW', self.quit)
+
+    def quit(self, *args, **kwargs):
+        if track is not None:
+            track.join()
+        super(Window, self).quit(*args, **kwargs)
 
 
 class Login(tkinter.Frame):
@@ -170,12 +193,20 @@ class Home(tkinter.Frame):
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
-        self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).restart(),
-                                      font=tkinter.font.Font(family='Calibri', size=32))
-        self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 + self.startBT.winfo_reqwidth(), y=375)
-        self.continueBT = tkinter.Button(text='Continue', command=lambda: SlideShow(self.parent, user).start(),
-                                         font=tkinter.font.Font(family='Calibri', size=32))
-        self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
+        # when i am teacher ->
+        if user.data["role"] == "teacher":
+            self.text_box = tkinter.Entry(font=tkinter.font.Font(family='Calibri', size=32))
+            self.text_box.insert(0, json.dumps(self.parent.slides_data))
+            self.text_box.place(x=10, y=200, width=self.canvas.winfo_reqwidth() - 20, height=400)
+
+        # when only student ->
+        elif user.data["role"] == "student":
+            self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).restart(),
+                                          font=tkinter.font.Font(family='Calibri', size=32))
+            self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 + self.startBT.winfo_reqwidth(), y=375)
+            self.continueBT = tkinter.Button(text='Continue', command=lambda: SlideShow(self.parent, user).start(),
+                                             font=tkinter.font.Font(family='Calibri', size=32))
+            self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
 
         if self.parent.perm_manager.check(user, 'read'):
             print(user)
@@ -275,6 +306,9 @@ class SlideShow:
         _slides = json_file.JsonFile(os.path.join('assets', 'dat/slides.json'))
         _slides.load()
         slides = _slides.data
+        global track
+        track = threading.Thread(target=lambda: playsound.playsound('assets/sounds/audio.mp3'))
+        track.start()
 
         self.root = root
         self.user = user
@@ -344,13 +378,13 @@ class SlideShow:
 class User(object):
 
     def __init__(
-        self,
-        username,
-        password=None,
-        data=None,
-        auth=None,
-        logins=None,
-        permissions=None
+            self,
+            username,
+            password=None,
+            data=None,
+            auth=None,
+            logins=None,
+            permissions=None
     ):
         """
         This class represents a user.
@@ -507,8 +541,10 @@ def main():
     user_manager = UserManager(users_db, logins_db)
     perm_manager = PermManager()
 
+    slides_json = json_file.JsonFile('assets/dat/slides.json')
+
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager, perm_manager)
+    window = Window(Login, user_manager, perm_manager, slides_json)
     # Running the main loop of the Application
     window.mainloop()
 
