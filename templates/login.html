@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bologna1980 | Login</title>
+</head>
+<body>
+    <div class="content-section">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <fieldset>
+                <legend></legend>
+                <div>
+                    {{ form.username.label() }}
+                    {{ form.username() }}
+                </div>
+                <div>
+                    {{ form.password.label() }}
+                    {{ form.password() }}
+                </div>
+                <div>
+                    {{ form.submit() }}
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</body>
+</html>
