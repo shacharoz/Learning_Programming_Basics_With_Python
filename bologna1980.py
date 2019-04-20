@@ -4,13 +4,10 @@ import tkinter
 import tkinter.font
 import json
 import time
-import sys
 import os
 
 import datetime_helper
 import json_file
-
-track: threading.Thread = None
 
 ADMIN = 1
 TEACHER = 2
@@ -27,7 +24,7 @@ STUDENT = 3
 class Window(tkinter.Tk):
     """This subclass of tkinter.Tk will represent a new window which can show different pages."""
 
-    def __init__(self, index, user_manager, perm_manager, slides_json, *args, **kwargs):
+    def __init__(self, index, user_manager, perm_manager, *args, **kwargs):
         """
         Initializes the class, __init__ function is used by Python as a constructor for classes.
         :param index: The start page
@@ -39,8 +36,8 @@ class Window(tkinter.Tk):
 
         self.user_manager = user_manager
         self.perm_manager = perm_manager
-        slides_json.load()
-        self.slides_data = slides_json.data
+        self.slides = json_file.JsonFile('assets/dat/slides.json')
+        self.slides.load()
 
         # Initializing self._frame (leading underscore is used because otherwise this will override tkinter.Tk.frame)
         # and displaying the start (or index) frame
@@ -69,11 +66,6 @@ class Window(tkinter.Tk):
         self._frame = frame  # Switching self._frame to current frame
         self._frame.pack()  # Displaying the new frame (or page)
         self.protocol('WM_DELETE_WINDOW', self.quit)
-
-    def quit(self, *args, **kwargs):
-        if track is not None:
-            track.join()
-        super(Window, self).quit(*args, **kwargs)
 
 
 class Login(tkinter.Frame):
@@ -193,14 +185,15 @@ class Home(tkinter.Frame):
 
         self.label.place(x=self.canvas.winfo_reqwidth() / 2 - self.label.winfo_reqwidth() / 2, y=50)
 
-        # when i am teacher ->
-        if user.data["role"] == "teacher":
-            self.text_box = tkinter.Entry(font=tkinter.font.Font(family='Calibri', size=32))
-            self.text_box.insert(0, json.dumps(self.parent.slides_data))
+        # when I am teacher ->
+        if user.data['role'] == 'teacher':
+            self.text_box = tkinter.Text(font=tkinter.font.Font(family='Calibri', size=32))
+            self.text_box.insert('1.0', json.dumps(self.parent.slides.data, indent=2))
             self.text_box.place(x=10, y=200, width=self.canvas.winfo_reqwidth() - 20, height=400)
+            self.text_box.bind('<Control-s>', self.save_slides)
 
         # when only student ->
-        elif user.data["role"] == "student":
+        elif user.data['role'] == 'student':
             self.startBT = tkinter.Button(text='Start', command=lambda: SlideShow(self.parent, user).restart(),
                                           font=tkinter.font.Font(family='Calibri', size=32))
             self.startBT.place(x=self.canvas.winfo_reqwidth() / 2 + self.startBT.winfo_reqwidth(), y=375)
@@ -209,7 +202,11 @@ class Home(tkinter.Frame):
             self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
 
         if self.parent.perm_manager.check(user, 'read'):
-            print(user)
+            pass
+
+    def save_slides(self, event=None):
+        self.parent.slides.data = json.loads(self.text_box.get('1.0', 'end'))
+        self.parent.slides.save()
 
 
 class SlideFrame(tkinter.Frame):
@@ -306,9 +303,7 @@ class SlideShow:
         _slides = json_file.JsonFile(os.path.join('assets', 'dat/slides.json'))
         _slides.load()
         slides = _slides.data
-        global track
-        track = threading.Thread(target=lambda: playsound.playsound('assets/sounds/audio.mp3'))
-        track.start()
+        playsound.playsound('assets/sounds/audio.mp3', False)
 
         self.root = root
         self.user = user
@@ -541,10 +536,8 @@ def main():
     user_manager = UserManager(users_db, logins_db)
     perm_manager = PermManager()
 
-    slides_json = json_file.JsonFile('assets/dat/slides.json')
-
     # Allocating a new object that will represent the main window of the app
-    window = Window(Login, user_manager, perm_manager, slides_json)
+    window = Window(Login, user_manager, perm_manager)
     # Running the main loop of the Application
     window.mainloop()
 
