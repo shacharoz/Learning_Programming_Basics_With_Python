@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bologna1980 | Login</title>
+</head>
+<body>
+    <div class="content-section">
+        <h1>{{ title }}</h1>
+        <img width='500px' src="{{ url_for('static', filename=image_path) }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for message in messages %}
+        {{ message[1] }}
+        {% endfor %}
+        {% endwith %}
+
+        <h2>{{ time }}</h2>
+        <button>prev</button>
+        <button>next</button>
+    </div>
+</body>
+</html>

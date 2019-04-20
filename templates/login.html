@@ -9,6 +9,9 @@
         <h1>Stazione di Bologna 2 Agosto 1980</h1>
         <img width='500px' src="{{ url_for('static', filename='img/background.png') }}">
         {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for message in messages %}
+        {{ message[1] }}
+        {% endfor %}
         {% endwith %}
         <form method="POST">
             {{ form.hidden_tag() }}

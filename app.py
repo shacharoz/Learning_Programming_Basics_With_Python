@@ -19,6 +19,9 @@ app.config['SECRET_KEY'] = 'sonobello'
 def index():
     return 'Hello, World! Index page.'
 
+@app.route('/slideshow/<index>')
+def slideshow(index):
+    return flask.render_template('slideshow.html', title='aaa', time='00:00', image_path='')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
