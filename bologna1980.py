@@ -191,6 +191,9 @@ class Home(tkinter.Frame):
             self.text_box.insert('1.0', json.dumps(self.parent.slides.data, indent=2))
             self.text_box.place(x=10, y=200, width=self.canvas.winfo_reqwidth() - 20, height=400)
             self.text_box.bind('<Control-s>', self.save_slides)
+            self.saveBT = tkinter.Button(text='Click here or Press Ctrl+S to save',
+                                         font=tkinter.font.Font(family='Calibri', size=32), command=self.save_slides)
+            self.saveBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.saveBT.winfo_reqwidth() / 2, y=100)
 
         # when only student ->
         elif user.data['role'] == 'student':
@@ -200,6 +203,9 @@ class Home(tkinter.Frame):
             self.continueBT = tkinter.Button(text='Continue', command=lambda: SlideShow(self.parent, user).start(),
                                              font=tkinter.font.Font(family='Calibri', size=32))
             self.continueBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.continueBT.winfo_reqwidth(), y=375)
+
+        self.backtologinBT = tkinter.Button(text='Back to Login page', font=tkinter.font.Font(family='Calibri', size=32), command=lambda: self.parent.display(Login(self.parent)))
+        self.backtologinBT.place(x=self.canvas.winfo_reqwidth() / 2 - self.backtologinBT.winfo_reqwidth() / 2, y=600)
 
         if self.parent.perm_manager.check(user, 'read'):
             pass
