@@ -1,6 +1,9 @@
 import flask
 import flask_wtf
 import wtforms
+import os
+
+import json_file
 
 
 class LoginForm(flask_wtf.FlaskForm):
@@ -14,14 +17,22 @@ class LoginForm(flask_wtf.FlaskForm):
 app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = 'sonobello'
 
+slides_json = json_file.JsonFile(os.path.join('static', 'dat/slides.json'))
+slides_json.load()
+slides = slides_json.data
+
 
 @app.route('/')
 def index():
     return 'Hello, World! Index page.'
 
-@app.route('/slideshow/<int:index>')
-def slideshow(index):
-    return flask.render_template('slideshow.html', title='aaa', time='00:00', image_path='', index=index)
+
+@app.route('/slideshow/<int:_index>')
+def slideshow(_index):
+    slide = slides[_index - 1]
+    return flask.render_template('slideshow.html', title=slide['title'], time=slide['time'], image_path=slide['image'],
+                                 index=_index - 1, back=_index != 1, next=_index < len(slides))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

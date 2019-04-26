@@ -2,27 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bologna1980 | Login</title>
+    <title>Bologna1980 | {{ title }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
 
+<style>
+    body {
+        background-image: url('{{ url_for('static', filename='img/' + image_path) }}');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+</style>
+
 <div class="content-section">
 
     <div class="row justify-content-md-center">
         <div class="col-lg-5">
-            <h1>{{ title + index|safe }}</h1>
-            <img width='500px' src="{{ url_for('static', filename=image_path) }}">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for message in messages %}
-            {{ message[1] }}
-            {% endfor %}
-            {% endwith %}
-
-            <h2>{{ time }}</h2>
-            <a type="button" class="btn btn-primary" href="{{ index - 1 }}">prev</a>
-            <a type="button" class="btn btn-primary" href="{{ index + 1 }}">next</a>
+            <h1 class="text-white">{{ title + index|safe }}</h1>
+            <h2 class="text-white">{{ time }}</h2>
+            {% if back %}
+            <a type="button" class="btn btn-primary" href="{{ index }}">Back</a>
+            {% endif %}
+            {% if next %}
+            <a type="button" class="btn btn-primary" href="{{ index + 2 }}">Next</a>
+            {% endif %}
         </div>
     </div>
 
