@@ -14,18 +14,34 @@
             background-repeat: no-repeat;
             background-size: cover;
         }
+        .text-gray {
+            color : rgb(200,200,200);
+        }
+
+        .background-black {
+            background: rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
 <div class="content-section">
-<br><br>
-    <div class="row justify-content-md-center background-black">
+    <br><br>
+    <div class="row  background-black">
 
         <div class="col-lg-6">
             <h1 class="text-white text-center">Stazione di Bologna 2 Agosto 1980</h1>
         </div>
 
-        <div class="col-lg-6 ">
+
+    </div>
+
+    <div class="row justify-content-md-center background-black">
+        <div class="col-lg-6">
+            <h3 class="text-muted text-left">welcome to the ..................... explanation of the presentation</h3>
+            <h3 class="text-muted text-left">instructions how to use this ......................................</h3>
+        </div>
+
+        <div class="col-lg-5 ">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% for message in messages %}
             {{ message[1] }}
@@ -36,22 +52,24 @@
                 <fieldset>
                     <legend></legend>
                     <div>
-                        {{ form.username.label() }}
-                        {{ form.username() }}
+                        <h3 class="text-white">Username</h3>
                     </div>
                     <div>
-                        {{ form.password.label() }}
-                        {{ form.password() }}
+                        {{ form.username(class_='form-control', placeholder='Username') }}
                     </div>
                     <div>
-                        {{ form.submit() }}
+                        <h3 class="text-white">Password</h3>
+                    </div>
+                    <div>
+                        {{ form.password(class_='form-control', placeholder='Password') }}
+                    </div>
+                    <div>
+                        {{ form.submit(class_='btn btn-primary') }}
                     </div>
                 </fieldset>
             </form>
         </div>
     </div>
-
-
 
 </div>
 
