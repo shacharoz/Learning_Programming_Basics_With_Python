@@ -27,18 +27,19 @@ def index():
     return 'Hello, World! Index page.'
 
 
-@app.route('/slideshow/<int:_index>')
-def slideshow(_index):
+@app.route('/slideshow/<string:username>/<int:_index>')
+def slideshow(username, _index):
     slide = slides[_index - 1]
     return flask.render_template('slideshow.html', title=slide['title'], time=slide['time'], image_path=slide['image'],
-                                 index=_index - 1, back=_index != 1, next=_index < len(slides))
+                                 index=_index - 1, back=_index != 1, next=_index < len(slides), username=username)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        flask.flash('Logged in. Not really just a test.', 'success')
+        #flask.flash('Logged in. Not really just a test.', 'success')
+        return flask.redirect('/slideshow/' + form.username.data + '/1')
     return flask.render_template('login.html', form=form)
 
 
