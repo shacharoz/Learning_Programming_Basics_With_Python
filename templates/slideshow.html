@@ -14,23 +14,48 @@
         background-repeat: no-repeat;
         background-size: cover;
     }
+    .background-black {
+        background: rgba(0,0,0,0.5);
+    }
+
+    .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+    }
+
 </style>
 
 <div class="content-section">
+    <br><br>
 
-    <div class="row justify-content-md-center">
-        <div class="col-lg-5">
+    <div class="row justify-content-md-center background-black">
+        <div class="col-lg-6">
             <h1 class="text-white">{{ title + index|safe }}</h1>
-            <h2 class="text-white">{{ time }}</h2>
-            {% if back %}
-            <a type="button" class="btn btn-primary" href="{{ index }}">Back</a>
-            {% endif %}
-            {% if next %}
-            <a type="button" class="btn btn-primary" href="{{ index + 2 }}">Next</a>
-            {% endif %}
+        </div>
+
+        <div class="col-lg-3">
+            <h2 class="text-white text-right">{{ time }}</h2>
         </div>
     </div>
 
+
+    <div class="footer background-black">
+        <div class="row">
+            <div class="col-sm-1">
+                {% if back %}
+                <a type="button" class="btn btn-primary" href="{{ index }}">Back</a>
+                {% endif %}
+            </div>
+            <div class="col-sm-1 offset-sm-10">
+                {% if next %}
+                <a type="button" class="btn btn-primary" href="{{ index + 2 }}">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
