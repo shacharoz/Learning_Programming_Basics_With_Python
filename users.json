@@ -10,5 +10,17 @@
   "pianoro": {
     "password": "factory",
     "id": "e9a57955a3ae9dfa956728e295324e95d1e1b6caab7059111e9676e29b4e46b2"
+  },
+  "oz": {
+    "password": "1234",
+    "id": "8319db829c7d13e0077d78b51ce37e17fb1540bb0418b8729e2fcd8095907291"
+  },
+  "francesco": {
+    "password": "1234",
+    "id": "092e8a0106611698ccb56164a150a2697d2d931158cbf854418c66b0831cfb95"
+  },
+  "rossella": {
+    "password": "casa",
+    "id": "a9105b7401f3adbde2527061a3a42c6ae197fec7cbc0bfd1818276804c51fa70"
   }
 }
