@@ -33,6 +33,15 @@
 </style>
 
 <div class="content-section">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
     <div class="row justify-content-md-center background-black">
 
         <div class="offset-sm-7 col-lg-5">

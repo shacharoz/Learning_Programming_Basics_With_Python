@@ -7,10 +7,10 @@ import wtforms
 import flask_login
 import flask_sqlalchemy
 
-import json_file
+import json
 
 app = flask.Flask(__name__)
-app.config['SECRET_KEY'] = 'sonobello'
+app.config['SECRET_KEY'] = 'sono_bello'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
@@ -19,12 +19,8 @@ login_manager.init_app(app)
 
 db = flask_sqlalchemy.SQLAlchemy(app)
 
-users_json = json_file.JsonFile('users.json')
-users_json.load()
-
-slides_json = json_file.JsonFile(os.path.join('static', 'dat/slides.json'))
-slides_json.load()
-slides = slides_json.data
+with app.open_resource(os.path.join('static', 'dat/slides.json')) as fp:
+    slides = json.load(fp)
 
 
 class LoginForm(flask_wtf.FlaskForm):
@@ -46,7 +42,7 @@ class User(flask_login.UserMixin, db.Model):
 
 @app.route('/')
 def index():
-    return 'Hello, World! Index page.'
+    return flask.redirect('login')
 
 
 @app.route('/slideshow/<int:_index>')
@@ -66,12 +62,19 @@ def login():
         if db.session.query(
                 db.session.query(User).filter_by(username=form.username.data).exists()
         ).scalar():
-            flask_login.login_user(User.query.filter_by(username=form.username.data).first())
+            user = User.query.filter_by(username=form.username.data).first()
+            print('login')
+            if form.password.data == user.password:
+                flask_login.login_user(user)
+            else:
+                flask.flash('Login failed!', 'danger')
+                return flask.redirect('login')
         else:
             user = User(username=form.username.data, password=form.password.data)
             db.session.add(user)
             db.session.commit()
             flask_login.login_user(user)
+            flask.flash('Registration successful!', 'success')
         return flask.redirect('/slideshow/1')
     return flask.render_template('login.html', form=form)
 
