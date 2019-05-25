@@ -9,6 +9,9 @@ import flask_sqlalchemy
 
 import json
 
+NORMAL_USER = 0
+ADMIN = 1
+
 app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = 'sono_bello'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -18,9 +21,6 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 db = flask_sqlalchemy.SQLAlchemy(app)
-
-with app.open_resource(os.path.join('static', 'dat/slides.json')) as fp:
-    slides = json.load(fp)
 
 
 class LoginForm(flask_wtf.FlaskForm):
@@ -35,9 +35,21 @@ class User(flask_login.UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
+    progress = db.Column(db.Integer, nullable=True)
+    role = db.Column(db.Integer, nullable=False)
 
     def get_id(self):
         return self.id
+
+
+class Slide(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(60), nullable=False, unique=False)
+    image = db.Column(db.String(60), nullable=False, default='default.png')
+    time = db.Column(db.String(8), nullable=False)
+
+
 
 
 @app.route('/')
@@ -48,9 +60,13 @@ def index():
 @app.route('/slideshow/<int:_index>')
 @flask_login.login_required
 def slideshow(_index):
+    slides = Slide.query.all()
     slide = slides[_index - 1]
     user = flask_login.current_user
-    return flask.render_template('slideshow.html', title=slide['title'], time=slide['time'], image_path=slide['image'],
+    user.progress = 0 if user.progress == None else user.progress
+    user.progress = _index if _index > user.progress else user.progress
+    db.session.commit()
+    return flask.render_template('slideshow.html', title=slide.title, time=slide.time, image_path=slide.image,
                                  index=_index - 1, back=_index != 1, next=_index < len(slides), user=user)
 
 
@@ -63,20 +79,52 @@ def login():
                 db.session.query(User).filter_by(username=form.username.data).exists()
         ).scalar():
             user = User.query.filter_by(username=form.username.data).first()
-            print('login')
             if form.password.data == user.password:
                 flask_login.login_user(user)
             else:
                 flask.flash('Login failed!', 'danger')
                 return flask.redirect('login')
         else:
-            user = User(username=form.username.data, password=form.password.data)
+            user = User(username=form.username.data, password=form.password.data, role=NORMAL_USER)
             db.session.add(user)
             db.session.commit()
             flask_login.login_user(user)
             flask.flash('Registration successful!', 'success')
-        return flask.redirect('/slideshow/1')
+        if user.role == ADMIN:
+            return flask.redirect('/admin')
+        else:
+            return flask.redirect('/slideshow/' + str(user.progress if user.progress is not None else 1))
     return flask.render_template('login.html', form=form)
+
+
+@flask_login.login_required
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if flask_login.current_user.role == ADMIN:
+        slides = Slide.query.all()
+        if flask.request.method == 'POST':
+            _slides = flask.request.form
+            __slides = []
+            slide = {}
+            for key, value in _slides.items():
+                if key.startswith('title'):
+                    slide['title'] = value
+                elif key.startswith('image'):
+                    slide['image'] = value
+                elif key.startswith('time'):
+                    slide['time'] = value
+                if slide.get('title') is not None and slide.get('image') is not None and slide.get('time') is not None:
+                    __slides.append(Slide(title=slide['title'], image=slide['image'], time=slide['time']))
+                    slide = {}
+            for slide in slides:
+                db.session.delete(slide)
+            for slide in __slides:
+                print('TESTING')
+                db.session.add(slide)
+            db.session.commit()
+            slides = Slide.query.all()
+            return flask.render_template('admin.html', slides=slides, enumerate=enumerate)
+        return flask.render_template('admin.html', slides=slides, enumerate=enumerate)
 
 
 @login_manager.user_loader
