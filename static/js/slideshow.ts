@@ -59,7 +59,7 @@ class SlideShow {
     }
   }
 
-  private async sync() {
+  private async sync(): Promise<void> {
     const conn = new XMLHttpRequest();
     const payload = JSON.stringify({ index: this.index });
     conn.open('POST', '/slideshow');
@@ -67,12 +67,12 @@ class SlideShow {
     conn.send(payload);
   }
 
-  public back() {
+  public back(): void {
     this.index--;
     this.populate();
   } 
 
-  public next() {
+  public next(): void {
     this.index++;
     this.populate();
     if (this.index > this.highest) {
