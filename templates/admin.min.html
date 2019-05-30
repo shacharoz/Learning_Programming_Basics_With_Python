@@ -1,0 +1,1 @@
+{% extends "layout.min.html" %} {% block script %}<script src="{{ url_for('static', filename='js/SlidesEditor.js') }}"></script><script>console.log();var editor=new SlidesEditor(JSON.parse('{{ "" + slides|tojson }}'),JSON.parse('{{ "" + images|tojson }}'));editor.populate()</script>{% endblock %}

@@ -1,130 +1,115 @@
-import secrets
 import os
 
-import flask
-import flask_wtf
-import wtforms
-import flask_login
-import flask_sqlalchemy
+from flask import abort, flash, Flask, jsonify, render_template, redirect, request
+from flask_login import current_user, LoginManager, login_required, login_user
+from wtforms import PasswordField, StringField, SubmitField
+from wtforms.validators import DataRequired, Length
+from werkzeug.utils import secure_filename
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
 
-import json
+from filters import do_tojson
 
-NORMAL_USER = 0
-ADMIN = 1
 
-app = flask.Flask(__name__)
-app.config['SECRET_KEY'] = 'sono_bello'
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'This is a secret! ;) Sshh...'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
-login_manager = flask_login.LoginManager()
+app.jinja_env.filters['tojson'] = do_tojson
+
+login_manager = LoginManager()
 login_manager.init_app(app)
 
-db = flask_sqlalchemy.SQLAlchemy(app)
+db = SQLAlchemy(app)
+
+from models import ADMIN_USER, AnonymousUser, GUEST_USER, NORMAL_USER, User, Slide 
 
 
-class LoginForm(flask_wtf.FlaskForm):
-    username = wtforms.StringField('Username', validators=[wtforms.validators.DataRequired(),
-                                                           wtforms.validators.Length(min=2, max=20)])
-    password = wtforms.PasswordField('Password', validators=[wtforms.validators.DataRequired()])
-
-    submit = wtforms.SubmitField('Login')
-
-
-class User(flask_login.UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40), nullable=False, unique=True)
-    password = db.Column(db.String(80), nullable=False)
-    progress = db.Column(db.Integer, nullable=True)
-    role = db.Column(db.Integer, nullable=False)
-
-    def get_id(self):
-        return self.id
-
-
-class Slide(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(60), nullable=False, unique=False)
-    image = db.Column(db.String(60), nullable=False, default='default.png')
-    time = db.Column(db.String(8), nullable=False)
-
-
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
 
 
 @app.route('/')
 def index():
-    return flask.redirect('login')
+    return redirect('login')
 
 
-@app.route('/slideshow/<int:_index>')
-@flask_login.login_required
-def slideshow(_index):
-    slides = Slide.query.all()
-    slide = slides[_index - 1]
-    user = flask_login.current_user
-    user.progress = 0 if user.progress == None else user.progress
-    user.progress = _index if _index > user.progress else user.progress
-    db.session.commit()
-    return flask.render_template('slideshow.html', title=slide.title, time=slide.time, image_path=slide.image,
-                                 index=_index - 1, back=_index != 1, next=_index < len(slides), user=user)
+@login_required
+@app.route('/slideshow', methods=['GET', 'POST'])
+def slideshow():
+    if request.method == 'POST':
+        data = request.json
+        index = data.get('index')
+        if index:
+            current_user.progress = index
+            db.session.commit()
+            return jsonify({ 'success': True })
+        else:
+            return abort(400)
+    else:
+        slides = Slide.query.all()
+        slide_index = current_user.progress if current_user.progress else 0
+        return render_template('slideshow.min.html', index=slide_index, user=current_user, slides=slides)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # flask.flash('Logged in. Not really just a test.', 'success')
-        if db.session.query(
-                db.session.query(User).filter_by(username=form.username.data).exists()
-        ).scalar():
+        if db.session.query(db.session.query(User).filter_by(username=form.username.data).exists()).scalar():
             user = User.query.filter_by(username=form.username.data).first()
             if form.password.data == user.password:
-                flask_login.login_user(user)
+                login_user(user)
+                flash('Login successful!', 'success')
             else:
-                flask.flash('Login failed!', 'danger')
-                return flask.redirect('login')
+                flash('Login failed!', 'danger')
+                return redirect('login')
         else:
-            user = User(username=form.username.data, password=form.password.data, role=NORMAL_USER)
+            user = User(username=form.username.data, password=form.password.data, role=ADMIN_USER)
             db.session.add(user)
             db.session.commit()
-            flask_login.login_user(user)
-            flask.flash('Registration successful!', 'success')
-        if user.role == ADMIN:
-            return flask.redirect('/admin')
+            login_user(user)
+            flash('Registration successful!', 'success')
+        if user.role == ADMIN_USER:
+            return redirect('slideshow/edit')
         else:
-            return flask.redirect('/slideshow/' + str(user.progress if user.progress is not None else 1))
-    return flask.render_template('login.html', form=form)
+            return redirect('/slideshow/' + str(user.progress if user.progress is not None else 1))
+    return render_template('login.html', form=form)
 
 
-@flask_login.login_required
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if flask_login.current_user.role == ADMIN:
+@login_required
+@app.route('/slideshow/edit', methods=['GET', 'POST'])
+def edit_slideshow():
+    if hasattr(current_user, 'role') and getattr(current_user, 'role') == ADMIN_USER:
         slides = Slide.query.all()
-        if flask.request.method == 'POST':
-            _slides = flask.request.form
-            __slides = []
-            slide = {}
-            for key, value in _slides.items():
-                if key.startswith('title'):
-                    slide['title'] = value
-                elif key.startswith('image'):
-                    slide['image'] = value
-                elif key.startswith('time'):
-                    slide['time'] = value
-                if slide.get('title') is not None and slide.get('image') is not None and slide.get('time') is not None:
-                    __slides.append(Slide(title=slide['title'], image=slide['image'], time=slide['time']))
-                    slide = {}
+        images = os.listdir(os.path.join('static', 'img'))
+        if request.method == 'POST':
+            data = request.json
             for slide in slides:
                 db.session.delete(slide)
-            for slide in __slides:
-                print('TESTING')
+            for slide_dict in data:
+                slide = Slide(title=slide_dict.get('title'), image=slide_dict.get('image'), time=slide_dict.get('time'))
                 db.session.add(slide)
             db.session.commit()
-            slides = Slide.query.all()
-            return flask.render_template('admin.html', slides=slides, enumerate=enumerate)
-        return flask.render_template('admin.html', slides=slides, enumerate=enumerate)
+            return jsonify({'success': True}), 200
+        else:
+            return render_template('admin.min.html', slides=slides, images=images, enumerate=enumerate)
+    else:
+        return abort(404)
+
+
+@login_required
+@app.route('/slideshow/upload', methods=['POST'])
+def upload_image():
+    try:
+        image = request.files['image']
+        image.save(os.path.join('static', 'img', secure_filename(image.filename)))
+        return jsonify({ 'success': True }), 200
+    except OSError as e:
+        return jsonify({ 'error': str(e), 'status': 500, 'success': False }), 500
 
 
 @login_manager.user_loader
