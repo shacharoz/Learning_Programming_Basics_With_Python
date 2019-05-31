@@ -12,21 +12,27 @@ class SlideShow {
   private highest: number;
 
   constructor (slides: Slide[], index: number) {
-    if (/\#slide\-[0-9]+/.test(window.location.hash)) {
-      this.index = parseInt(window.location.hash.split('-')[1]) - 1;
+    this.slides = slides;
+    let tmpIndex = window.location.hash.split('#')[1];
+    if (+tmpIndex === +tmpIndex) {
+      this.index = parseInt(tmpIndex) - 1;
     } else {
       this.index = index;
     }
-    this.slides = slides;
+    if (!(this.index in this.slides)) {
+      this.index = 0;
+    }
     this.slidesLoaded = 0;
     this.highest = this.index;
   }
 
   public populate(): void {
+    window.location.hash = '#' + String(this.index + 1);
     const slide = this.slides[this.index];
     if (this.index < this.slidesLoaded) {
       this.load(slide);
     }
+    document.title = `Bologna 1980 - ${slide.title}`;
     const titleElement = document.getElementById('title');
     titleElement.innerText = slide.title;
     document.body.style.background = `url(/static/img/${slide.image}) no-repeat center center fixed`;

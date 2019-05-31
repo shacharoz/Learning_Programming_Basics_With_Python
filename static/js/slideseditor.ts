@@ -331,7 +331,7 @@ class SlidesEditor {
         setTimeout(() => {
           btn.innerText = 'Update';
           btn.disabled = false;
-        }, 500);
+        }, 200);
       };
     })(btn);
 

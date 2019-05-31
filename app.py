@@ -14,7 +14,7 @@ from filters import do_tojson
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'This is a secret! ;) Sshh...'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 
 app.jinja_env.filters['tojson'] = do_tojson
 
@@ -52,7 +52,7 @@ def slideshow():
     else:
         slides = Slide.query.all()
         slide_index = current_user.progress if current_user.progress else 0
-        return render_template('slideshow.min.html', index=slide_index, user=current_user, slides=slides)
+        return render_template('slideshow.html', index=slide_index, user=current_user, slides=slides)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -96,7 +96,7 @@ def edit_slideshow():
             db.session.commit()
             return jsonify({'success': True}), 200
         else:
-            return render_template('admin.min.html', slides=slides, images=images, enumerate=enumerate)
+            return render_template('admin.html', slides=slides, images=images, enumerate=enumerate)
     else:
         return abort(404)
 

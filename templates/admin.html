@@ -1,9 +1,8 @@
-{% extends "layout.min.html" %}
+{% extends "layout.html" %}
 {% block script %}
-  <script src="{{ url_for('static', filename='js/SlidesEditor.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/slideseditor.js') }}"></script>
   <script>
-    console.log()
-    var editor = new SlidesEditor(JSON.parse('{{ "" + slides|tojson }}'), JSON.parse('{{ "" + images|tojson }}'));
+    var editor = new SlidesEditor({{ slides|tojson }}, {{ images|tojson }});
     editor.populate();
   </script>
 {% endblock %}

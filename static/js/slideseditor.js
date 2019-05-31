@@ -325,7 +325,7 @@ var SlidesEditor = /** @class */ (function () {
                         setTimeout(function () {
                             btn.innerText = 'Update';
                             btn.disabled = false;
-                        }, 500);
+                        }, 200);
                     };
                 })(btn);
                 payload = JSON.stringify(this.slides);
