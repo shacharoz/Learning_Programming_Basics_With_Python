@@ -16,4 +16,3 @@ venv/
 
 # Custom ignores
 *.ignore
-*.db
