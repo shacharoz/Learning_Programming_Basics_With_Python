@@ -2,7 +2,7 @@ import os
 
 from flask import abort, flash, Flask, jsonify, render_template, redirect, request
 from flask_login import current_user, LoginManager, login_required, login_user
-from wtforms import PasswordField, StringField, SubmitField
+from wtforms import PasswordField, StringField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -29,6 +29,7 @@ from models import ADMIN_USER, AnonymousUser, GUEST_USER, NORMAL_USER, User, Sli
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     password = PasswordField('Password', validators=[DataRequired()])
+    creator = BooleanField('Creator')
     submit = SubmitField('Login')
 
 
@@ -68,7 +69,7 @@ def login():
                 flash('Login failed!', 'danger')
                 return redirect('login')
         else:
-            user = User(username=form.username.data, password=form.password.data, role=ADMIN_USER)
+            user = User(username=form.username.data, password=form.password.data, role=ADMIN_USER if form.creator.data else NORMAL_USER)
             db.session.add(user)
             db.session.commit()
             login_user(user)
