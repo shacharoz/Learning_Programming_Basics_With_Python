@@ -23,7 +23,7 @@ login_manager.init_app(app)
 
 db = SQLAlchemy(app)
 
-from models import ADMIN_USER, AnonymousUser, GUEST_USER, NORMAL_USER, User, Slide 
+from models import ADMIN_USER, AnonymousUser, GUEST_USER, NORMAL_USER, User, Slide
 
 
 class LoginForm(FlaskForm):
@@ -77,8 +77,14 @@ def login():
         if user.role == ADMIN_USER:
             return redirect('slideshow/edit')
         else:
-            return redirect('/slideshow/' + str(user.progress if user.progress is not None else 1))
+            return redirect('/slideshow#' + str(user.progress if user.progress is not None else 1))
     return render_template('login.html', form=form)
+
+
+@login_required
+@app.route('/manager')
+def manager():
+    return render_template('manager.html')
 
 
 @login_required

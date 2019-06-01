@@ -30,6 +30,7 @@ class Slide(db.Model):
     title = db.Column(db.String(60), nullable=False, unique=False)
     image = db.Column(db.String(60), nullable=False, default='default.png')
     time = db.Column(db.String(8), nullable=False)
+    course = db.ForeignKey('slide.course')
 
     def tojson(self):
         """Returns a JSON serializable dicionary representing the class."""
