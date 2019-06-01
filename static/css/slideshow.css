@@ -1,0 +1,30 @@
+/*body {
+  overflow: hidden;
+}*/
+
+.bg-black {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+}
+
+.footer .btn {
+  margin-top: 0.65rem;
+}
+
+.footer .float-left {
+  margin-left: 0.65rem;
+}
+
+.footer .float-right {
+  margin-right: 0.65rem;
+}
+
+#title {
+  font-size: 4em;
+}

@@ -1,25 +1,18 @@
 # PyCharm Project files
-
 .idea
-
 *.iml
 
 
 # Python extensions and byte-compiled files
-
 __pycache__/
-
 *.py[cod]
-
 *$py.class
 
 
 # Python Virtual Environment
-
-.venv
-
+.venv/
 venv/
 
-# Custom ignores
 
+# Custom ignores
 *.ignore
