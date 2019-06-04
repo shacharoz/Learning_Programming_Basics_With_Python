@@ -44,18 +44,13 @@ var Preview = /** @class */ (function () {
         var img = document.createElement('img');
         var btn = document.createElement('button');
         img.setAttribute('src', this.src);
-        btn.innerText = '×';
-        btn.onclick = (function (preview) {
-            return preview.close;
-        })(this);
-        preview.addEventListener('click', (function (preview, btn, img) {
+        preview.addEventListener('click', (function (preview, img) {
             return function (event) {
-                if (img !== event.target && btn !== event.target) {
+                if (img !== event.target) {
                     preview.close();
                 }
             };
-        })(this, btn, img));
-        preview.appendChild(btn);
+        })(this, img));
         preview.appendChild(img);
         containerPrimary.appendChild(preview);
     };
@@ -137,6 +132,16 @@ var SlidesEditor = /** @class */ (function () {
             titleControl.setAttribute('type', 'text');
             titleControl.setAttribute('value', slide.title);
             titleControl.classList.add('form-control');
+            titleControl.addEventListener('mousedown', (function (parent) {
+                return function () {
+                    parent.draggable = false;
+                };
+            })(slideCol));
+            titleControl.addEventListener('mouseup', (function (parent) {
+                return function () {
+                    parent.draggable = true;
+                };
+            })(slideCol));
             cardBody.appendChild(titleControl);
             var imageControl = document.createElement('select');
             imageControl.setAttribute('id', 'image_' + String(index));
@@ -147,27 +152,77 @@ var SlidesEditor = /** @class */ (function () {
             imageControl.appendChild(imageOption);
             _this.images.forEach(function (image) {
                 var imageOption = document.createElement('option');
+                var imgParts = image.split('/');
+                var imageName = imgParts[imgParts.length - 1];
                 imageOption.setAttribute('value', image);
-                imageOption.innerText = image;
+                imageOption.innerText = imageName;
                 if (slide.image === image) {
                     imageOption.selected = true;
                 }
                 imageControl.appendChild(imageOption);
             });
-            imageControl.classList.add('form-control');
+            imageControl.classList.add('form-control', 'inline');
+            imageControl.addEventListener('mousedown', (function (parent) {
+                return function () {
+                    parent.draggable = false;
+                };
+            })(slideCol));
+            imageControl.addEventListener('mouseup', (function (parent) {
+                return function () {
+                    parent.draggable = true;
+                };
+            })(slideCol));
             cardBody.appendChild(imageControl);
+            var uploadBtn = document.createElement('button');
+            uploadBtn.innerText = 'Upload';
+            uploadBtn.classList.add('btn', 'btn-primary', 'form-btn');
+            uploadBtn.onclick = (function (editor, index) {
+                return function () {
+                    var uploadControl = document.createElement('input');
+                    uploadControl.setAttribute('type', 'file');
+                    uploadControl.setAttribute('accept', 'image/*');
+                    uploadControl.addEventListener('input', (function (editor, index) {
+                        return function (event) {
+                            var file = event.target.files[0];
+                            editor.upload(file, index);
+                        };
+                    })(editor, index));
+                    uploadControl.click();
+                };
+            })(_this, index);
+            uploadBtn.addEventListener('mousedown', (function (parent) {
+                return function () {
+                    parent.draggable = false;
+                };
+            })(slideCol));
+            uploadBtn.addEventListener('mouseup', (function (parent) {
+                return function () {
+                    parent.draggable = true;
+                };
+            })(slideCol));
+            cardBody.appendChild(uploadBtn);
             var timeControl = document.createElement('input');
             timeControl.setAttribute('id', 'time_' + String(index));
             timeControl.setAttribute('name', timeControl.getAttribute('id'));
             timeControl.setAttribute('type', 'text');
             timeControl.setAttribute('value', slide.time);
             timeControl.classList.add('form-control');
+            timeControl.addEventListener('mousedown', (function (parent) {
+                return function () {
+                    parent.draggable = false;
+                };
+            })(slideCol));
+            timeControl.addEventListener('mouseup', (function (parent) {
+                return function () {
+                    parent.draggable = true;
+                };
+            })(slideCol));
             cardBody.appendChild(timeControl);
             var previewBtn = document.createElement('button');
             previewBtn.classList.add('preview');
             var previewImg = document.createElement('img');
             previewImg.setAttribute('id', 'preview_' + String(index));
-            previewImg.setAttribute('src', '/static/img/' + slide.image);
+            previewImg.setAttribute('src', slide.image);
             previewImg.classList.add('img', 'fit');
             previewBtn.appendChild(previewImg);
             previewBtn.onclick = (function (src) {
@@ -299,7 +354,7 @@ var SlidesEditor = /** @class */ (function () {
         })(this, index);
         var previewBtn = document.getElementsByClassName('preview')[index];
         var previewImg = document.getElementById('preview_' + String(index));
-        previewImg.setAttribute('src', '/static/img/' + slide.image);
+        previewImg.setAttribute('src', slide.image);
         previewBtn.onclick = (function (src) {
             return function () {
                 new Preview(src).open();
@@ -329,8 +384,36 @@ var SlidesEditor = /** @class */ (function () {
                     };
                 })(btn);
                 payload = JSON.stringify(this.slides);
-                conn.open('POST', '/slideshow/edit');
+                conn.open('POST', window.location.href);
                 conn.setRequestHeader('Content-Type', 'application/json');
+                conn.send(payload);
+                return [2 /*return*/];
+            });
+        });
+    };
+    SlidesEditor.prototype.upload = function (file, index) {
+        return __awaiter(this, void 0, void 0, function () {
+            var conn, loader, payload;
+            return __generator(this, function (_a) {
+                conn = new XMLHttpRequest();
+                loader = document.createElement('div');
+                loader.classList.add('loader');
+                document.body.appendChild(loader);
+                conn.onload = (function (editor, index, loader) {
+                    return function () {
+                        var filename = '/static/users' + window.location.pathname.replace(new RegExp('(\/edit)$'), '') + '/' + file.name;
+                        if (editor.images.indexOf(filename) === -1) {
+                            editor.images.push(filename);
+                            editor.images.sort();
+                        }
+                        editor.slides[index].image = filename;
+                        editor.populate();
+                        document.body.removeChild(loader);
+                    };
+                })(this, index, loader);
+                payload = new FormData();
+                payload.append('image', file);
+                conn.open('POST', window.location.href.replace(new RegExp('(\/edit)$'), '/upload'));
                 conn.send(payload);
                 return [2 /*return*/];
             });
@@ -344,7 +427,7 @@ var SlidesEditor = /** @class */ (function () {
     };
     SlidesEditor.prototype.clone = function (index) {
         if (index === -1) {
-            this.slides.push({ title: 'Edit Title', image: 'missing.png', time: '00:00' });
+            this.slides.push({ title: 'Edit Title', image: '/static/img/default.png', time: '00:00' });
         }
         else {
             this.slides.push(this.slides[index]);

@@ -2,17 +2,6 @@
 {% block style %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/slideshow.css') }}">
 {% endblock %}
-{% block navbar %}
-  <nav>
-    <!--<a href="/slideshow" class="float-left">Slideshow</a>-->
-    <!--<p class="float-right">Hello {{ current_user.username }}</p>-->
-    <div class="row bg-black">
-      <div class="offset-sm-7 col-lg-5">
-        <h4 class="text-white text-right">Hello, {{ current_user.username }}</h4>
-      </div>
-    </div>
-  </nav>
-{% endblock %}
 {% block footer %}
   <footer>
 

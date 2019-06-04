@@ -3,8 +3,12 @@
   height: 100%;
 }
 
+.form-btn {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
 .col-md-4 .card {
-  min-width: 16rem;
   min-height: 16rem;
 }
 
@@ -26,6 +30,9 @@
 
 #preview {
   position: fixed;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   top: 0;
   left: 0;
   right: 0;
@@ -36,28 +43,10 @@
 #preview img {
   width: 80%;
   max-height: 80%;
+  margin: auto;
   margin-top: 90px;
-  margin-left: 10%;
   border-radius: 4px;
   box-shadow: 0 0 2rem rgb(26, 26, 26);
-}
-
-#preview button {
-  margin: 0;
-  padding: 0;
-  float: right;
-  outline: none;
-  border: none;
-  color: #ccc;
-  font-size: 3em;
-  background-color: transparent;
-  transition-property: color;
-  transition-duration: 0.5s;
-  margin-right: 0.5em;
-}
-
-#preview button:hover {
-  color: #fff;
 }
 
 #delete {
@@ -77,6 +66,8 @@
 }
 
 #delete svg {
+  width: 5rem;
+  height: 5rem;
   margin-top: 0.35rem;
 }
 
@@ -123,6 +114,29 @@
   margin-bottom: 2rem;
 }
 
+.loader {
+  position: fixed;
+  top: 0;
+  width: 75%;
+  height: 4px;
+  background-color: #007bff;
+  animation-name: loader;
+  animation-duration: .8s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes loader {
+  0% {
+    left: -75%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: -75%;
+  }
+}
+
 .slide {
   position: relative;
 }
@@ -136,4 +150,100 @@
 .container-primary {
   margin-top: 3rem;
   align-items: center;
+}
+
+#contextmenu {
+  position: absolute;
+}
+
+@media (min-width: 1620px) {
+  #preview img {
+    width: 70%;
+    margin: auto;
+    margin-top: 7rem;
+  }
+}
+
+@media (max-width: 960px) {
+  #delete {
+    padding: 0;
+    width: 4rem;
+    height: 4rem;
+    right: 0.8rem;
+    bottom: 0.8rem;
+  }
+
+  #delete svg {
+    width: 3rem;
+    height: 3rem;
+  }
+  #add {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+    right: 5.6rem;
+    bottom: 0.8rem;
+  }
+}
+
+/*
+ * Header
+ */
+.masthead {
+  margin-bottom: 2rem;
+}
+
+.masthead-brand {
+  margin-bottom: 0;
+}
+
+.nav-masthead .nav-link {
+  padding: .25rem 0;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .5);
+  background-color: transparent;
+  border-bottom: .25rem solid transparent;
+}
+
+.nav-masthead .nav-link:hover,
+.nav-masthead .nav-link:focus {
+  border-bottom-color: rgba(255, 255, 255, .25);
+}
+
+.nav-masthead .nav-link + .nav-link {
+  margin-left: 1rem;
+}
+
+.nav-masthead .active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+@media (min-width: 48em) {
+  .masthead-brand {
+    float: left;
+  }
+  .nav-masthead {
+    float: right;
+  }
+}
+
+
+/*
+ * Cover
+ */
+.cover {
+  padding: 0 1.5rem;
+}
+.cover .btn-lg {
+  padding: .75rem 1.25rem;
+  font-weight: 700;
+}
+
+
+/*
+ * Footer
+ */
+.mastfoot {
+  color: rgba(255, 255, 255, .5);
 }

@@ -21,18 +21,13 @@ class Preview {
     let img = document.createElement('img');
     let btn = document.createElement('button');
     img.setAttribute('src', this.src);
-    btn.innerText = '×';
-    btn.onclick = ((preview: Preview) => {
-      return preview.close;
-    })(this);
-    preview.addEventListener('click', ((preview: Preview, btn: HTMLButtonElement, img: HTMLImageElement) => {
+    preview.addEventListener('click', ((preview: Preview, img: HTMLImageElement) => {
       return (event: MouseEvent) => {
-        if (img !== event.target && btn !== event.target) {
+        if (img !== event.target) {
           preview.close();
         }
       };
-    })(this, btn, img));
-    preview.appendChild(btn);
+    })(this, img));
     preview.appendChild(img);
     containerPrimary.appendChild(preview);
   }
@@ -127,6 +122,16 @@ class SlidesEditor {
       titleControl.setAttribute('type', 'text');
       titleControl.setAttribute('value', slide.title);
       titleControl.classList.add('form-control');
+      titleControl.addEventListener('mousedown', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = false;
+        };
+      })(slideCol));
+      titleControl.addEventListener('mouseup', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = true;
+        };
+      })(slideCol));
       cardBody.appendChild(titleControl);
 
       let imageControl = document.createElement('select');
@@ -140,16 +145,57 @@ class SlidesEditor {
       
       this.images.forEach(image => {
         let imageOption = document.createElement('option');
+        const imgParts = image.split('/');
+        const imageName = imgParts[imgParts.length - 1];
         imageOption.setAttribute('value', image);
-        imageOption.innerText = image;
+        imageOption.innerText = imageName;
         if (slide.image === image) {
           imageOption.selected = true;
         }
         imageControl.appendChild(imageOption);
       });
 
-      imageControl.classList.add('form-control');
+      imageControl.classList.add('form-control', 'inline');
+      imageControl.addEventListener('mousedown', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = false;
+        };
+      })(slideCol));
+      imageControl.addEventListener('mouseup', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = true;
+        };
+      })(slideCol));
       cardBody.appendChild(imageControl);
+
+      let uploadBtn = document.createElement('button');
+      uploadBtn.innerText = 'Upload';
+      uploadBtn.classList.add('btn', 'btn-primary', 'form-btn');
+      uploadBtn.onclick = ((editor: SlidesEditor, index: number) => {
+        return () => {
+          let uploadControl = document.createElement('input');
+          uploadControl.setAttribute('type', 'file');
+          uploadControl.setAttribute('accept', 'image/*');
+          uploadControl.addEventListener('input', ((editor: SlidesEditor, index: number) => {
+            return (event: Event) => {
+              const file = (<HTMLInputElement> event.target).files[0];
+              editor.upload(file, index);
+            };
+          })(editor, index));
+          uploadControl.click();
+        };
+      })(this, index);
+      uploadBtn.addEventListener('mousedown', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = false;
+        };
+      })(slideCol));
+      uploadBtn.addEventListener('mouseup', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = true;
+        };
+      })(slideCol));
+      cardBody.appendChild(uploadBtn);
 
       let timeControl = document.createElement('input');
       timeControl.setAttribute('id', 'time_' + String(index));
@@ -157,13 +203,23 @@ class SlidesEditor {
       timeControl.setAttribute('type', 'text');
       timeControl.setAttribute('value', slide.time);
       timeControl.classList.add('form-control');
+      timeControl.addEventListener('mousedown', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = false;
+        };
+      })(slideCol));
+      timeControl.addEventListener('mouseup', ((parent: HTMLElement) => {
+        return () => {
+          parent.draggable = true;
+        };
+      })(slideCol));
       cardBody.appendChild(timeControl);
 
       let previewBtn = document.createElement('button');
       previewBtn.classList.add('preview');
       let previewImg = document.createElement('img');
       previewImg.setAttribute('id', 'preview_' + String(index));
-      previewImg.setAttribute('src', '/static/img/' + slide.image);
+      previewImg.setAttribute('src', slide.image);
       previewImg.classList.add('img', 'fit');
       previewBtn.appendChild(previewImg);
       previewBtn.onclick = ((src: string) => {
@@ -183,9 +239,9 @@ class SlidesEditor {
       })(this, index));
 
       imageControl.addEventListener('change', ((editor: SlidesEditor, index: number) => {
-        return (event) => {
+        return (event: Event) => {
           const slide = editor.slides[index];
-          slide.image = event.target.value;
+          slide.image = (<HTMLSelectElement> event.target).value;
           editor.repopulate(slide, index);
         };
       })(this, index));
@@ -304,7 +360,7 @@ class SlidesEditor {
     })(this, index);
     const previewBtn = <HTMLButtonElement> document.getElementsByClassName('preview')[index];
     const previewImg = <HTMLImageElement> document.getElementById('preview_' + String(index));
-    previewImg.setAttribute('src', '/static/img/' + slide.image);
+    previewImg.setAttribute('src', slide.image);
     previewBtn.onclick = ((src: string) => {
       return () => {
         new Preview(src).open();
@@ -335,10 +391,37 @@ class SlidesEditor {
       };
     })(btn);
 
-    let payload = JSON.stringify(this.slides);
+    const payload = JSON.stringify(this.slides);
 
-    conn.open('POST', '/slideshow/edit');
+    conn.open('POST', window.location.href);
     conn.setRequestHeader('Content-Type', 'application/json');
+    conn.send(payload);
+  }
+
+  public async upload(file: File, index: number) {
+    const conn = new XMLHttpRequest();
+
+    let loader = document.createElement('div');
+    loader.classList.add('loader');
+    document.body.appendChild(loader);
+
+    conn.onload = ((editor: SlidesEditor, index: number, loader) => {
+      return () => {
+        const filename = '/static/users' + window.location.pathname.replace(new RegExp('(\/edit)$'), '') + '/' + file.name;
+        if (editor.images.indexOf(filename) === -1) {
+          editor.images.push(filename);
+          editor.images.sort();
+        }
+        editor.slides[index].image = filename;
+        editor.populate();
+        document.body.removeChild(loader);
+      };
+    })(this, index, loader);
+
+    const payload = new FormData();
+    payload.append('image', file);
+
+    conn.open('POST', window.location.href.replace(new RegExp('(\/edit)$'), '/upload'));
     conn.send(payload);
   }
 
@@ -351,7 +434,7 @@ class SlidesEditor {
 
   public clone(index: number) {
     if (index === -1) {
-      this.slides.push({ title: 'Edit Title', image: 'missing.png', time: '00:00' });
+      this.slides.push({ title: 'Edit Title', image: '/static/img/default.png', time: '00:00' });
     } else {
       this.slides.push(this.slides[index]);
     }

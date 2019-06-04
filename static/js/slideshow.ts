@@ -15,7 +15,12 @@ class SlideShow {
     this.slides = slides;
     let tmpIndex = window.location.hash.split('#')[1];
     if (+tmpIndex === +tmpIndex) {
-      this.index = parseInt(tmpIndex) - 1;
+      let _index = parseInt(tmpIndex);
+      if (this.slides[tmpIndex] !== undefined) {
+        this.index = _index - 1;
+      } else {
+        this.index = index;
+      }
     } else {
       this.index = index;
     }
@@ -35,7 +40,7 @@ class SlideShow {
     document.title = `Bologna 1980 - ${slide.title}`;
     const titleElement = document.getElementById('title');
     titleElement.innerText = slide.title;
-    document.body.style.background = `url(/static/img/${slide.image}) no-repeat center center fixed`;
+    document.body.style.background = `url("${slide.image}") no-repeat center center fixed`;
     document.body.style.backgroundSize = 'cover';
     const timeElement = document.getElementById('time');
     timeElement.innerText = slide.time;
@@ -54,7 +59,7 @@ class SlideShow {
   }
 
   public load(slide: Slide): void {
-    const img = document.createElement('img').setAttribute('src', '/static/img/' + slide.image);
+    const img = document.createElement('img').setAttribute('src', slide.image);
     this.slidesLoaded++;
   }
 
@@ -68,7 +73,7 @@ class SlideShow {
   private async sync(): Promise<void> {
     const conn = new XMLHttpRequest();
     const payload = JSON.stringify({ index: this.index });
-    conn.open('POST', '/slideshow');
+    conn.open('POST', window.location.href);
     conn.setRequestHeader('Content-Type', 'application/json');
     conn.send(payload);
   }

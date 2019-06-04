@@ -38,7 +38,13 @@ var SlideShow = /** @class */ (function () {
         this.slides = slides;
         var tmpIndex = window.location.hash.split('#')[1];
         if (+tmpIndex === +tmpIndex) {
-            this.index = parseInt(tmpIndex) - 1;
+            var _index = parseInt(tmpIndex);
+            if (this.slides[tmpIndex] !== undefined) {
+                this.index = _index - 1;
+            }
+            else {
+                this.index = index;
+            }
         }
         else {
             this.index = index;
@@ -58,7 +64,7 @@ var SlideShow = /** @class */ (function () {
         document.title = "Bologna 1980 - " + slide.title;
         var titleElement = document.getElementById('title');
         titleElement.innerText = slide.title;
-        document.body.style.background = "url(/static/img/" + slide.image + ") no-repeat center center fixed";
+        document.body.style.background = "url(\"" + slide.image + "\") no-repeat center center fixed";
         document.body.style.backgroundSize = 'cover';
         var timeElement = document.getElementById('time');
         timeElement.innerText = slide.time;
@@ -78,7 +84,7 @@ var SlideShow = /** @class */ (function () {
         }
     };
     SlideShow.prototype.load = function (slide) {
-        var img = document.createElement('img').setAttribute('src', '/static/img/' + slide.image);
+        var img = document.createElement('img').setAttribute('src', slide.image);
         this.slidesLoaded++;
     };
     SlideShow.prototype.preload = function () {
@@ -99,7 +105,7 @@ var SlideShow = /** @class */ (function () {
             return __generator(this, function (_a) {
                 conn = new XMLHttpRequest();
                 payload = JSON.stringify({ index: this.index });
-                conn.open('POST', '/slideshow');
+                conn.open('POST', window.location.href);
                 conn.setRequestHeader('Content-Type', 'application/json');
                 conn.send(payload);
                 return [2 /*return*/];
