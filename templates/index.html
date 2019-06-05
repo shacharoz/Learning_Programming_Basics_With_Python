@@ -1,37 +1,36 @@
 {% extends "layout.html" %}
-{% block header %}
-  <header>
-      <div class="navbar d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 border-bottom bg-white shadow-sm">
-        <nav class="my-1 my-md-0">
-          <a class="p-2 text-nav text-dark" href="/">Home</a>
-          <a class="p-2 text-nav text-dark" href="https://github.com/shacharoz/Learning_Programming_Basics_With_Python" target="_blank">GitHub</a>
-        </nav>
-        <nav class="my-1 my-md-12">
-          {% if current_user.is_authenticated %}
-            <a class="p-2 text-nav text-dark" href="/logout?redirect={{ next }}">Sign out</a>
-          {% else %}
-            <a class="p-2 text-nav text-dark" href="/login?redirect={{ next }}">Sign in</a>
-          {% endif %}
-        </nav>
-      </div>
-    </header>
-{% endblock header %}
+
 {% block content %}
-  <div class="text-center">
-    <h1>Host stunning SlideShows for free</h1>
-    <p class="lead text-muted">This site allows you to make slideshows... [something more here]</p>
-  </div>
-  <!-- <div class="row">
-    <div class="col-6 text-center">
+  <!--<div class="text-center">-->
+    <!--<h1>Host stunning SlideShows for free</h1>-->
+    <!--<p class="lead text-muted">This site allows you to make slideshows... [something more here]</p>-->
+  <!--</div>-->
+  <div class="row">
+    <div class="col-lg-6 text-center">
       <h1>Host stunning SlideShows for free</h1>
-      <p class="lead text-muted">This site allows you to make slideshows... [something more here]</p>
+      <p class="lead text-muted">This site allows you to make slideshows. Use for free on your own responsiblity :)</p>
+      <p class="lead text-muted">When you sign as a CREATOR, you can create presentations, just like a powerpoint slideshow. this can be shared with others. you can invited others to help you to develop the content. if they stop in the middle, they can continue from the same location.</p>
+      <p class="lead text-muted">Created by: Federico Carboni and Shachar Oz in Pianoro Factory... :)</p>
+      <p class="lead text-muted">Want to help us develop this more? Join our <a href="https://github.com/shacharoz/Learning_Programming_Basics_With_Python">Github</a>. we write in Python!</p>
     </div>
-    <div class="col-6">
+    <div class="col-lg-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h3>Login</h3>
+          <h3>Login/Register</h3>
+          <form method="POST">
+            {{ form.hidden_tag() }}
+              <fieldset>
+                {{ form.username(class_='form-control', placeholder='Username') }}
+                {{ form.password(class_='form-control', placeholder='Password') }}
+                {{ form.creator() }}
+                {{ form.creator.label() }}
+                <div>
+                  {{ form.submit(class_='btn btn-primary') }}
+                </div>
+              </fieldset>
+            </form>
         </div>
       </div>
     </div>
-  </div> -->
+  </div>
 {% endblock content %}

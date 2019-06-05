@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+
+    <div class="col-lg-10">
+        <h1>My courses</h1>
+        <hr>
+    </div>
+
+    <div class="col-lg-6" id="courses">
+
+    {% for course in courses %}
+
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">{{ course.name }}</h3>
+            <a class="btn btn-primary" href="/{{ current_user.username }}/{{ course.name }}/edit">Edit</a>
+            <a class="btn btn-primary" href="/{{ current_user.username }}/{{ course.name }}">View</a>
+        </div>
+
+
+    </div>
+    {% endfor %}
+
+    </div>
+</div>
+
+
+<div class="row">
+
+    <div class="col-lg-10">
+        <h1>courses you watched</h1>
+        <hr>
+    </div>
+
+    <div class="col-lg-6">
+
+    {% for course in courses_watched %}
+
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">{{ course.name }}</h3>
+            <a class="btn btn-primary" href="/{{ current_user.username }}/{{ course.name }}">View</a>
+        </div>
+
+
+    </div>
+    {% endfor %}
+
+    </div>
+</div>
+<button class="btn btn-outline-success shadow-sm" id="add">+</button>
+{% endblock content %}
+{% block script %}
+<script>
+document.getElementById('add').onclick = function () {
+    var name = prompt('Type the name of the new Course.');
+    var conn = new XMLHttpRequest();
+    conn.onload = function () {
+        window.location.href = window.location.href + '/' + name + '/edit';
+    }
+    conn.open('POST', window.location.href + '/new');
+    conn.setRequestHeader('Content-Type', 'application/json');
+    conn.send(JSON.stringify({name: name}));
+}
+</script>
+{% endblock script %}

@@ -30,12 +30,30 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     creator = BooleanField('Creator')
-    submit = SubmitField('Login')
+    submit = SubmitField('Login/Register')
 
 
-@app.route('/')
-def index():
-    return render_template('index.html', next='/')
+@login_required
+@app.route('/<string:username>')
+def user_page(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    courses = Course.query.filter_by(owner=user.id).all()
+    progress = Progress.query.filter_by(user_id=user.id).all()
+    courses_watched = []
+    for prog in progress:
+        courses_watched.append(Course.query.get(prog.course_id))
+    return render_template('user_page.html', courses=courses, courses_watched=courses_watched)
+
+
+@login_required
+@app.route('/<string:username>/new', methods=['POST'])
+def new_course(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    data = request.json
+    course = Course(owner=user.id, name=data.get('name'))
+    os.makedirs(os.path.join('static', 'users', secure_filename(user.username), secure_filename(data.get('name'))))
+    db.session.add(course)
+    db.session.commit()
 
 
 @login_required
@@ -47,8 +65,11 @@ def slideshow(username, course_name):
         data = request.json
         slide_index = data.get('index')
         if slide_index:
-            progress = Progress(user_id=user.id, course_id=course.id, index=slide_index)
-            db.session.add(progress)
+            progress = Progress.query.filter_by(user_id=user.id, course_id=course.id).first()
+            if progress:
+                progress.index = slide_index
+            else:
+                db.session.add(Progress(user_id=user.id, course_id=course.id, index=slide_index))
             db.session.commit()
             return jsonify({'success': True})
         else:
@@ -71,7 +92,7 @@ def edit_slideshow(username, course_name):
     user = User.query.filter_by(username=username).first_or_404()
     course = Course.query.filter_by(name=course_name, owner=user.id).first_or_404()
     if hasattr(current_user, 'role') and getattr(current_user, 'role') >= CREATOR_USER:
-        slides = Slide.query.all()
+        slides = Slide.query.filter_by(course_id=course.id).all()
         safe_username = secure_filename(user.username)
         safe_coursename = secure_filename(course.name)
         course_folder = '/' + '/'.join(['static', 'users', safe_username, safe_coursename])
@@ -109,7 +130,7 @@ def upload_image(username, course_name):
         return jsonify({'error': str(e), 'status': 500, 'success': False}), 500
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -131,9 +152,9 @@ def login():
                 os.mkdir(user_folder)
             flash('Registration successful!', 'success')
         path = request.args.get('redirect')
-        path = path if path else '/'
+        path = path if path else '/' + secure_filename(user.username)
         return redirect(path)
-    return render_template('login.html', form=form, next=request.path)
+    return render_template('index.html', form=form, next=request.path)
 
 
 @login_required

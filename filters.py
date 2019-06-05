@@ -8,7 +8,7 @@ def json_dumps_default(obj):
     if hasattr(obj, 'tojson'):
         return obj.tojson()
     else:
-        raise TypeError(f'Object of type {o.__class__.__name__} ' +
+        raise TypeError(f'Object of type {obj.__class__.__name__} ' +
                         f'is not JSON serializable')
 
 
