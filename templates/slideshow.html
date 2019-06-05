@@ -6,30 +6,30 @@
   <meta http-equiv="x-ua-Compatible" content="ie=edge">
   <title>Bologna 1980</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/slideshow.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
   <header>
-    <div class="navbar d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 border-bottom bg-black shadow-sm">
+    <div class="navbar d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-black shadow-sm">
       <nav class="my-1 my-md-0">
-        <a class="p-2 text-light" href="/">Home</a>
-        <a class="p-2 text-light" href="https://github.com/shacharoz/Learning_Programming_Basics_With_Python" target="_blank">GitHub</a>
+        <a class="p-2 text-nav text-light" href="/">Home</a>
+        <a class="p-2 text-nav text-light" href="https://github.com/shacharoz/Learning_Programming_Basics_With_Python" target="_blank">GitHub</a>
       </nav>
       <nav class="my-1 my-md-12">
         {% if current_user.is_authenticated %}
-          <a class="p-2 text-light" href="/logout?redirect={{ next }}">Sign out</a>
+          <a class="p-2 text-nav text-light" href="/logout?redirect={{ next }}">Sign out</a>
         {% else %}
-          <a class="p-2 text-light" href="/login?redirect={{ next }}">Sign in</a>
+          <a class="p-2 text-nav text-light" href="/login?redirect={{ next }}">Sign in</a>
         {% endif %}
       </nav>
     </div>
   </header>
   <div class="content-section">
-    <div class="row justify-content-md-center bg-black">
+    <div class="d-flex align-items-center p-2 bg-black title">
       <div class="col-lg-6">
         <h1 class="text-white" id="title">{{ title }}</h1>
       </div>
-      <div class="col-lg-3">
+      <div class="col-lg-5">
         <h3 class="text-white text-right" id="time">{{ time }}</h3>
       </div>
     </div>

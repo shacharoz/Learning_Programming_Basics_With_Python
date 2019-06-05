@@ -10,13 +10,6 @@ collaborators_table = db.Table(
     db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
 )
 
-progress_table = db.Table(
-    'progress',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
-    db.Column('current_slide', db.Integer, nullable=True),
-)
-
 GUEST_USER = -1
 NORMAL_USER = 0
 CREATOR_USER = 1
@@ -27,7 +20,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
-    progress = db.relationship('Course', secondary=progress_table, backref='viewers')
+    progress = db.relationship('Progress', backref='user')
     role = db.Column(db.Integer, nullable=False)
 
     def get_id(self):
@@ -38,12 +31,20 @@ class AnonymousUser(AnonymousUserMixin):
     role = GUEST_USER
 
 
+class Progress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    index = db.Column(db.Integer, nullable=True)
+
+
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60), nullable=False)
     slides = db.relationship('Slide', backref='course', lazy=True)
     owner = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     collaborators = db.relationship('User', secondary=collaborators_table, backref=db.backref('courses'))
+    viewers = db.relationship('Progress', backref='course')
 
 
 class Slide(db.Model):

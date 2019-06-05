@@ -23,7 +23,7 @@ login_manager.init_app(app)
 
 db = SQLAlchemy(app)
 
-from models import ADMIN_USER, AnonymousUser, CREATOR_USER, Course, GUEST_USER, NORMAL_USER, User, Slide
+from models import ADMIN_USER, AnonymousUser, CREATOR_USER, Course, GUEST_USER, NORMAL_USER, Progress, User, Slide
 
 
 class LoginForm(FlaskForm):
@@ -35,7 +35,7 @@ class LoginForm(FlaskForm):
 
 @app.route('/')
 def index():
-    return redirect('login')
+    return render_template('index.html', next='/')
 
 
 @login_required
@@ -47,14 +47,15 @@ def slideshow(username, course_name):
         data = request.json
         slide_index = data.get('index')
         if slide_index:
-            course.viewers.append(current_user)
-            course.viewers[-1].current_slide = slide_index
+            progress = Progress(user_id=user.id, course_id=course.id, index=slide_index)
+            db.session.add(progress)
             db.session.commit()
             return jsonify({'success': True})
         else:
             return abort(400)
     else:
-        slide_index = current_user.progress if hasattr(current_user, 'progress') else 0
+        slide_index = Progress.query.filter_by(user_id=user.id, course_id=course.id).first()
+        slide_index = slide_index.index if slide_index else 0 
         return render_template('slideshow.html', index=slide_index, user=current_user, slides=course.slides, next=request.path)
 
 
